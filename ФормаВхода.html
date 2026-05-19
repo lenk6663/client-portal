@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Форма входа</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #d9d9d9;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .login-wrapper {
+      width: 980px;
+      background: #f5f5f5;
+      border-radius: 28px;
+      padding: 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+      display: flex;
+      gap: 22px;
+    }
+
+    /* LEFT */
+    .left-card {
+      width: 42%;
+      min-height: 560px;
+      background: linear-gradient(-100deg, rgba(255, 161, 98, 0.55), rgba(255, 116, 47, 0.838));
+      border-radius: 26px;
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* LIQUID LAYER (движущиеся кружочки) */
+    canvas {
+      position: absolute;
+      opacity: 0.5;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* контейнер для логотипа с картинкой (вместо старого текста) */
+    .logo-image {
+      position: relative;
+      z-index: 3;
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .logo-image img {
+      max-width: 80%;
+      height: auto;
+      max-height: 100px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1));
+    }
+
+    /* description остался как был, но его позиция и стили не меняются */
+    .description {
+      position: relative;
+      z-index: 3;
+      color: #1f1f1f;
+    }
+
+    /* blur элементы ВОЗВРАЩЕНЫ (не менялись) */
+    .blur-1,
+    .blur-2,
+    .blur-3 {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(55px);
+      opacity: 0.45;
+      z-index: 2;
+    }
+
+    .blur-1 {
+      width: 260px;
+      height: 120px;
+      background: #ffe7a7;
+      top: 210px;
+      left: 70px;
+      transform: rotate(-25deg);
+    }
+
+    .blur-2 {
+      width: 90px;
+      height: 90px;
+      background: #ff7aa8;
+      top: 150px;
+      right: 80px;
+    }
+
+    .blur-3 {
+      width: 120px;
+      height: 120px;
+      background: #ffb36b;
+      bottom: 180px;
+      right: 60px;
+    }
+
+    .description small {
+      display: block;
+      margin-bottom: 12px;
+      color: #9b7758;
+      font-size: 16px;
+    }
+
+    .description p {
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .description strong {
+      font-weight: 700;
+    }
+
+    /* RIGHT SIDE */
+    .right-side {
+      width: 58%;
+      padding: 70px 30px 40px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .title {
+      font-size: 46px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #000;
+    }
+
+    .subtitle {
+      color: #9f9f9f;
+      font-size: 16px;
+      margin-bottom: 38px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-group input {
+      width: 100%;
+      height: 58px;
+      border: 2px solid #cccccc;
+      border-radius: 14px;
+      padding: 0 18px;
+      font-size: 18px;
+      outline: none;
+      background: transparent;
+    }
+
+    .eye-icon {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #ff7d34;
+      cursor: pointer;
+    }
+
+    .sms-link {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #ff7d34;
+      cursor: pointer;
+    }
+
+    .login-btn {
+      margin-top: 28px;
+      width: 100%;
+      height: 60px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #f7c64d, #ff8446);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ===== АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ ===== */
+    @media (max-width: 768px) {
+      body {
+        padding: 0;
+        background: linear-gradient(135deg, rgba(255, 161, 98, 0.95), rgba(255, 116, 47, 1));
+        align-items: flex-start;
+        min-height: 100vh;
+      }
+
+      .login-wrapper {
+        width: 100%;
+        max-width: 100%;
+        background: transparent;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        min-height: 100vh;
+      }
+
+      /* Оранжевый прямоугольник с канвасом - наверху на всю ширину, теперь фон */
+      .left-card {
+        width: 100%;
+        min-height: 320px;
+        border-radius: 0 0 32px 32px;
+        padding: 32px 24px 40px 24px;
+        background: linear-gradient(135deg, rgba(255, 161, 98, 0.85), rgba(255, 116, 47, 0.92));
+        justify-content: flex-start;
+        gap: 12px;
+        position: relative;
+        margin-bottom: 0;
+      }
+
+      /* Логотип на телефоне */
+      .logo-image {
+        margin-bottom: 0;
+        justify-content: center;
+      }
+
+      .logo-image img {
+        max-width: 60%;
+        max-height: 80px;
+      }
+
+      /* Описание на телефоне компактнее, белый текст для контраста */
+      .description small {
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .description p {
+        font-size: 16px;
+        text-align: center;
+        line-height: 1.4;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+
+      /* Белая форма - поверх оранжевого фона, на всю ширину, с отступом от низа */
+      .right-side {
+        width: 100%;
+        background: #f5f5f5;
+        padding: 40px 24px 48px 24px;
+        border-radius: 32px 32px 0 0;
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 -8px 30px rgba(0,0,0,0.12);
+        flex: 1;
+        margin-top: -80px;
+      }
+
+      .title {
+        font-size: 32px;
+        text-align: center;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .input-group input {
+        height: 52px;
+        font-size: 16px;
+      }
+
+      .login-btn {
+        height: 54px;
+        font-size: 20px;
+        margin-top: 24px;
+      }
+
+      /* Немного уменьшаем blur-элементы на мобилке */
+      .blur-1 {
+        width: 180px;
+        height: 100px;
+        top: 140px;
+        left: 20px;
+      }
+
+      .blur-2 {
+        width: 70px;
+        height: 70px;
+        top: 90px;
+        right: 20px;
+      }
+
+      .blur-3 {
+        width: 100px;
+        height: 100px;
+        bottom: 100px;
+        right: 20px;
+      }
+
+      /* Канвас на мобилке чуть ярче для красоты */
+      .left-card canvas {
+        opacity: 0.55;
+      }
+    }
+
+    /* Для совсем маленьких экранов */
+    @media (max-width: 480px) {
+      .left-card {
+        min-height: 280px;
+        padding: 24px 20px 32px 20px;
+      }
+
+      .right-side {
+        padding: 32px 20px 40px 20px;
+      }
+
+      .title {
+        font-size: 28px;
+      }
+
+      .logo-image img {
+        max-width: 80%;
+      }
+
+      .description p {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="login-wrapper">
+
+  <div class="left-card">
+
+    <canvas id="liquid"></canvas>
+
+    <!-- Логотип с картинкой -->
+    <div class="logo-image" id="logoDashboardBtn">
+      <img src="https://neosystems.ru/upload/CAllcorp2/cf6/%D0%9D%D0%B5%D0%BE%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B.png" 
+           alt="Неосистемы Северо-Запад" 
+           onerror="this.onerror=null; this.src='https://placehold.co/200x60?text=Neosystems';">
+    </div>
+
+    <div class="blur-1"></div>
+    <div class="blur-2"></div>
+    <div class="blur-3"></div>
+
+    <div class="description">
+      <small>Автоматизация Вашего бизнеса</small>
+      <p>
+        Мы берем под <strong>надежную защиту</strong>
+        вашу 1С, предлагая комплекс услуг:
+        от продажи и установки программ до обучения.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="right-side">
+
+    <h1 class="title">Вход в систему</h1>
+
+    <p class="subtitle">
+      Для доступа к системе необходимо авторизоваться
+    </p>
+
+    <div class="input-group">
+      <input type="text" placeholder="Номер телефона">
+    </div>
+
+    <div class="input-group">
+      <input type="password" placeholder="Пароль">
+      <span class="eye-icon">👁</span>
+    </div>
+
+    <div class="input-group">
+      <input type="text" placeholder="Код из SMS">
+      <span class="sms-link">Получить код</span>
+    </div>
+
+    <button class="login-btn">Войти</button>
+
+  </div>
+
+</div>
+
+<script>
+const canvas = document.getElementById("liquid");
+const ctx = canvas.getContext("2d");
+
+const DPR = window.devicePixelRatio || 1;
+
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * DPR;
+  canvas.height = rect.height * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+/* ТЁПЛЫЕ, НО РАЗНЫЕ ЦВЕТА */
+const colors = [
+  "rgba(255, 120, 0, 0.9)",
+  "rgba(255, 170, 60, 0.85)",
+  "rgba(255, 90, 160, 0.8)",
+  "rgba(255, 210, 120, 0.85)",
+  "rgba(255, 140, 40, 0.9)"
+];
+
+/* КРУЖОЧКИ КРУПНЕЕ */
+const blobs = Array.from({ length: 14 }, () => ({
+  x: Math.random() * 500,
+  y: Math.random() * 600,
+  r: 65 + Math.random() * 220,
+  vx: (Math.random() - 0.5) * 0.8,
+  vy: (Math.random() - 0.5) * 0.8,
+  color: colors[Math.floor(Math.random() * colors.length)]
+}));
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.globalCompositeOperation = "lighter";
+
+  for (let b of blobs) {
+    b.x += b.vx;
+    b.y += b.vy;
+
+    if (b.x < -150 || b.x > canvas.clientWidth + 150) b.vx *= -1;
+    if (b.y < -150 || b.y > canvas.clientHeight + 150) b.vy *= -1;
+
+    const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+
+    grad.addColorStop(0, b.color);
+    grad.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+// ===== LOGIN LOGIC =====
+function showToast(msg) {
+  var toast = document.getElementById('appToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'appToast';
+    toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function() {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 2800);
+}
+
+var loginBtn = document.querySelector('.login-btn');
+if (loginBtn) {
+  loginBtn.addEventListener('click', function() {
+    localStorage.setItem('tppo_authed', '1');
+    loginBtn.textContent = 'Вхожу...';
+    loginBtn.disabled = true;
+    setTimeout(function() { window.location.href = 'Дашборд.html'; }, 350);
+  });
+}
+
+var smsLink = document.querySelector('.sms-link');
+if (smsLink) {
+  smsLink.addEventListener('click', function() {
+    showToast('Код отправлен на ваш номер телефона');
+  });
+}
+
+// Eye icon toggle for password
+var eyeIcon = document.querySelector('.eye-icon');
+if (eyeIcon) {
+  eyeIcon.addEventListener('click', function() {
+    var pwdInput = eyeIcon.closest('.input-group').querySelector('input');
+    if (pwdInput) {
+      if (pwdInput.type === 'password') { pwdInput.type = 'text'; eyeIcon.textContent = '🙈'; }
+      else { pwdInput.type = 'password'; eyeIcon.textContent = '👁'; }
+    }
+  });
+}
+
+// Enter key to login
+document.querySelectorAll('.right-side input').forEach(function(inp) {
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && loginBtn) loginBtn.click();
+  });
+});
+</script>
+
+</body>
+</html>

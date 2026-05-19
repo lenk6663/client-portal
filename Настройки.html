@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Настройки — Неосистемы Северо-Запад</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #e9e2dc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #1f1f1f;
+      position: relative;
+    }
+
+    /* Сайдбар фиксированный слева */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 250px;
+      height: 100vh;
+      padding: 28px 0 0 28px;
+      background: #e9e2dc;
+      transition: left 0.3s ease;
+      z-index: 1000;
+      transform: translateX(0);
+    }
+
+    /* Оверлей для мобильного меню */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 900;
+      transition: 0.2s ease;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    .logo-image {
+      display: block;
+      width: 100%;
+      max-width: 180px;
+      margin-bottom: 48px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    
+    .logo-image:hover {
+      opacity: 0.8;
+    }
+    
+    .logo-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 17px;
+      color: #8b8784;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .menu-item.active {
+      color: #000;
+      font-weight: 600;
+    }
+
+    .menu-item svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* Основная область с центрированием контента */
+    .main {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #e9e2dc;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    /* Центральный контейнер */
+    .central-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Карточка с белым фоном и оранжевой тенью */
+    .card {
+      width: 780px;
+      max-width: 90vw;
+      height: auto;
+      background: white;
+      border-radius: 28px;
+      box-shadow: 8px 8px 0 0 #f5a06e, 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 28px 32px 26px 32px;
+      transition: all 0.2s;
+    }
+
+    .card-header {
+      margin-bottom: 18px;
+    }
+
+    .card-header h1 {
+      font-size: 30px;
+      font-weight: 800;
+      color: #000;
+      letter-spacing: -0.3px;
+    }
+
+    /* Стили формы внутри карточки */
+    .profile-row {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 140px;
+      height: 140px;
+      background: #000;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .avatar i {
+      color: white;
+      font-size: 90px;
+    }
+
+    .profile-data {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .fullname {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      line-height: 1.2;
+      color: #1f1f1f;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      border: 2px solid #d4c9c2;
+      padding: 0 48px 0 16px;
+      font-size: 15px;
+      background: #f8f6f5;
+      color: #1f1f1f;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: 0.2s;
+    }
+
+    .input-wrap input:focus {
+      border-color: #f0884d;
+    }
+
+    .eye {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #f0884d;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .notifications-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 16px 0 12px;
+      color: #1f1f1f;
+    }
+
+    .notify-head {
+      display: grid;
+      grid-template-columns: 1fr 70px 70px;
+      padding: 0 8px 6px;
+      color: #a6a1a0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .notify-table {
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .notify-row {
+      display: grid;
+      grid-template-columns: 1fr 70px 70px;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      font-size: 14px;
+      color: #4b4746;
+    }
+
+    .notify-row:nth-child(even) {
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .check {
+      display: flex;
+      justify-content: center;
+    }
+
+    .check input {
+      width: 18px;
+      height: 18px;
+      accent-color: #f2bf57;
+      cursor: pointer;
+    }
+
+    /* Кнопка сохранения */
+    .save-btn {
+      width: 520px;
+      max-width: 80vw;
+      height: 52px;
+      border: none;
+      border-radius: 14px;
+      margin-top: 24px;
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.3px;
+    }
+
+    .save-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Десктопный профиль */
+    .profile {
+      position: fixed;
+      top: 36px;
+      right: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 6px 12px 6px 8px;
+      border-radius: 60px;
+      transition: background 0.2s;
+      color: #1a1a1a;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .profile-info:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    .profile-icon {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logout-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 40px;
+      transition: background 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .logout-icon {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logout-tooltip {
+      position: absolute;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 30;
+    }
+
+    .logout-btn:hover .logout-tooltip {
+      opacity: 1;
+    }
+
+    /* Мобильная верхняя панель */
+    .mobile-topbar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 0 18px;
+      gap: 12px;
+      background: #e9e2dc;
+      z-index: 15;
+      width: 100%;
+      position: sticky;
+      top: 0;
+    }
+
+    .burger {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      border: none;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(2px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      flex-shrink: 0;
+    }
+
+    .burger span {
+      width: 22px;
+      height: 2.5px;
+      background: #1e1e1e;
+      border-radius: 2px;
+    }
+
+    .mobile-user-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: transparent;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .mobile-profile-clickable {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      background: transparent;
+      padding: 4px 8px 4px 4px;
+      border-radius: 40px;
+      transition: background 0.2s;
+    }
+
+    .mobile-profile-clickable:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    .mobile-user-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1f1f1f;
+      white-space: nowrap;
+    }
+
+    .mobile-profile-icon {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 50%;
+    }
+
+    .mobile-logout-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 40px;
+      transition: background 0.2s;
+    }
+
+    .mobile-logout-wrapper:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .mobile-logout-icon {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 50%;
+    }
+
+    .mobile-logout-tooltip {
+      position: absolute;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 30;
+    }
+
+    .mobile-logout-wrapper:hover .mobile-logout-tooltip {
+      opacity: 1;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 1285px) {
+      .card {
+        width: 85%;
+        max-width: 700px;
+        padding: 24px 24px 22px 24px;
+      }
+      .save-btn {
+        width: 70%;
+        max-width: 480px;
+      }
+      .central-content {
+        padding-left: 250px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+      }
+      .central-content {
+        padding-left: 0px;
+      }
+      
+      .sidebar {
+        position: fixed;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        transform: none;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+        transition: left 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+
+      .main {
+        justify-content: flex-start;
+        align-items: center;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .profile {
+        display: none;
+      }
+
+      .mobile-topbar {
+        display: flex;
+        margin-bottom: 8px;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+      }
+
+      .central-content {
+        margin: 12px auto 40px auto;
+      }
+
+      .card {
+        width: calc(100% - 32px);
+        max-width: 550px;
+        padding: 20px 18px 22px 18px;
+        border-radius: 24px;
+      }
+
+      .card-header h1 {
+        font-size: 24px;
+        margin-bottom: 0;
+      }
+
+      .profile-row {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .profile-data {
+        width: 100%;
+      }
+
+      .fullname {
+        font-size: 18px;
+        text-align: center;
+        margin-bottom: 12px;
+      }
+
+      .avatar {
+        width: 100px;
+        height: 100px;
+      }
+
+      .avatar i {
+        font-size: 65px;
+      }
+
+      .notifications-title {
+        font-size: 18px;
+        margin: 12px 0 10px;
+      }
+
+      .notify-head,
+      .notify-row {
+        grid-template-columns: 1fr 50px 50px;
+        gap: 6px;
+        font-size: 12px;
+        padding: 0 5px;
+      }
+
+      .notify-row {
+        min-height: 34px;
+      }
+
+      .input-wrap input {
+        height: 40px;
+        font-size: 14px;
+      }
+
+      .save-btn {
+        width: calc(100% - 32px);
+        max-width: 450px;
+        height: 48px;
+        font-size: 17px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      
+      .main {
+        padding-top: 0;
+        padding-bottom: 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .mobile-topbar {
+        padding: 10px 14px;
+      }
+      .central-content {
+        margin: 8px auto 32px auto;
+      }
+      .card {
+        padding: 16px 14px 18px 14px;
+        width: calc(100% - 24px);
+      }
+      .card-header h1 {
+        font-size: 20px;
+      }
+      .save-btn {
+        height: 46px;
+        font-size: 16px;
+        width: calc(100% - 24px);
+      }
+      .fullname {
+        font-size: 16px;
+      }
+      .input-wrap input {
+        height: 38px;
+        font-size: 13px;
+      }
+      .notifications-title {
+        font-size: 17px;
+      }
+      .notify-head, .notify-row {
+        font-size: 11px;
+        min-height: 32px;
+      }
+    }
+
+    @media (max-width: 380px) and (max-height: 600px) {
+      .central-content {
+        margin: 4px auto 20px auto;
+      }
+      .card {
+        padding: 12px 12px 14px 12px;
+      }
+      .save-btn {
+        margin-top: 16px;
+        height: 42px;
+        font-size: 15px;
+      }
+      .notify-row {
+        min-height: 30px;
+      }
+      .profile-row {
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .avatar {
+        width: 80px;
+        height: 80px;
+      }
+      .avatar i {
+        font-size: 50px;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .card {
+        width: 75%;
+        max-width: 720px;
+      }
+      .save-btn {
+        width: 460px;
+      }
+    }
+
+    @media (min-width: 1600px) {
+      .card {
+        width: 1020px;
+        padding: 32px 38px 30px 38px;
+      }
+      .save-btn {
+        width: 560px;
+        height: 58px;
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="logo-image" id="logoDashboardBtn">
+    <img src="https://neosystems.ru/upload/CAllcorp2/cf6/%D0%9D%D0%B5%D0%BE%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B.png" 
+         alt="Неосистемы Северо-Запад" 
+         onerror="this.onerror=null; this.src='https://placehold.co/200x60?text=Neosystems';">
+  </div>
+  
+  <nav class="menu">
+    <div class="menu-item" data-route="dashboard">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3z"/>
+      </svg>
+      <span>Главный</span>
+    </div>
+
+    <div class="menu-item" data-route="my-tickets">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 13h4v8H3zm7-6h4v14h-4zm7-4h4v18h-4z"/>
+      </svg>
+      <span>Мои обращения</span>
+    </div>
+
+    <div class="menu-item" data-route="call-order">
+      <svg viewBox="0 0 24 24">
+        <path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.7 6.7l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V21c0 .6-.4 1-1 1C10.3 22 2 13.7 2 3c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1l-2.2 2.1z"/>
+      </svg>
+      <span>Заказать звонок</span>
+    </div>
+
+    <div class="menu-item active" data-route="settings">
+      <svg viewBox="0 0 24 24">
+        <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.22-1.12.53-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.43.34.69.22l2.39-.96c.51.41 1.05.72 1.63.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.22 1.12-.53 1.63-.94l2.39.96c.26.12.55.02.69-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z"/>
+      </svg>
+      <span>Настройки</span>
+    </div>
+  </nav>
+</div>
+
+<main class="main">
+  <div class="mobile-topbar">
+    <button class="burger" id="burgerBtn" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    
+    <div class="mobile-user-area">
+      <div class="mobile-profile-clickable" id="mobileProfileClickable">
+        <div class="mobile-profile-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="#2c2c2c">
+            <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
+          </svg>
+        </div>
+        <span class="mobile-user-name">Александра</span>
+      </div>
+      <div class="mobile-logout-wrapper" id="mobileLogoutBtn">
+        <div class="mobile-logout-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="#4a3b32">
+            <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h6v2H4c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h6v2H4v14z"/>
+          </svg>
+        </div>
+        <span class="mobile-logout-tooltip">Выход</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile">
+    <div class="profile-info" id="desktopProfileInfo">
+      <div class="profile-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="#111">
+          <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
+        </svg>
+      </div>
+      <span>Александра</span>
+    </div>
+    <div class="logout-btn" id="desktopLogoutBtn">
+      <div class="logout-icon">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="#111">
+          <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h6v2H4c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h6v2H4v14z"/>
+        </svg>
+      </div>
+      <span class="logout-tooltip">Выход</span>
+    </div>
+  </div>
+
+  <div class="central-content">
+    <div class="card">
+      <div class="card-header">
+        <h1>Настройки</h1>
+      </div>
+
+      <div class="profile-row">
+        <div class="avatar">
+          <i class="fa-solid fa-user"></i>
+        </div>
+
+        <div class="profile-data">
+          <div class="fullname">
+            Александрова Александра Александровна
+          </div>
+
+          <div class="input-wrap">
+            <input type="text" placeholder="Телефон: +7 999 123-45-67" id="phoneInput">
+            <i class="fa-regular fa-eye-slash eye" onclick="toggleField('phoneInput', this)"></i>
+          </div>
+
+          <div class="input-wrap">
+            <input type="email" placeholder="E-mail: example@example.com" id="emailInput">
+            <i class="fa-regular fa-eye-slash eye" onclick="toggleField('emailInput', this)"></i>
+          </div>
+
+          <div class="input-wrap">
+            <input type="password" placeholder="Пароль: ************" id="passInput">
+            <i class="fa-regular fa-eye eye" onclick="togglePassword('passInput', this)"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="notifications-title">Уведомления</div>
+
+      <div class="notify-head">
+        <div></div>
+        <div>E-mail</div>
+        <div>Push</div>
+      </div>
+
+      <div class="notify-table">
+        <div class="notify-row">
+          <div>Новое сообщение</div>
+          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input checked type="checkbox"></div>
+        </div>
+
+        <div class="notify-row">
+          <div>Новый статус обращения</div>
+          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input checked type="checkbox"></div>
+        </div>
+
+        <div class="notify-row">
+          <div>Комментарий к обращению</div>
+          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input checked type="checkbox"></div>
+        </div>
+
+        <div class="notify-row">
+          <div>Назначение ответственного</div>
+          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input checked type="checkbox"></div>
+        </div>
+
+        <div class="notify-row">
+          <div>Ответ от службы поддержки</div>
+          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input type="checkbox"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="save-btn" id="saveSettingsBtn">Сохранить изменения</button>
+  </div>
+</main>
+
+<script>
+  var TPPO_KEYS = { tickets:'tppo_tickets', msgs:function(id){return 'tppo_msgs_'+id;}, user:'tppo_user', settings:'tppo_settings' };
+  function showToast(msg){ var t=document.getElementById('appToast'); if(!t){t=document.createElement('div');t.id='appToast';t.style.cssText='position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';document.body.appendChild(t);} t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2800); }
+
+  function toggleField(inputId, eyeIcon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'text') { input.type = 'password'; eyeIcon.classList.remove('fa-eye-slash'); eyeIcon.classList.add('fa-eye'); }
+    else if (input.type === 'password') { input.type = 'text'; eyeIcon.classList.remove('fa-eye'); eyeIcon.classList.add('fa-eye-slash'); }
+  }
+
+  function togglePassword(inputId, eyeIcon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') { input.type = 'text'; eyeIcon.classList.remove('fa-eye'); eyeIcon.classList.add('fa-eye-slash'); }
+    else { input.type = 'password'; eyeIcon.classList.remove('fa-eye-slash'); eyeIcon.classList.add('fa-eye'); }
+  }
+
+  // ---- Load profile
+  function loadProfile(){
+    var u; try{ u=JSON.parse(localStorage.getItem(TPPO_KEYS.user)||'null'); }catch(e){}
+    if(u){
+      var ph=document.getElementById('phoneInput'); if(ph) ph.value=u.phone||'';
+      var em=document.getElementById('emailInput'); if(em) em.value=u.email||'';
+    }
+  }
+  loadProfile();
+
+  // ---- Load notification settings
+  function loadNotifSettings(){
+    var s; try{ s=JSON.parse(localStorage.getItem(TPPO_KEYS.settings)||'null'); }catch(e){}
+    if(!s) return;
+    var checkboxes=document.querySelectorAll('.notif-table input[type="checkbox"]');
+    // Match by row/col order if no IDs: flatten by row then email/push
+    // Try by id if assigned, otherwise skip
+    if(s.email){
+      var rows=['newMessage','statusChange','newOffer','responsible'];
+      rows.forEach(function(key){
+        var el=document.getElementById('email_'+key); if(el) el.checked=!!s.email[key];
+        var el2=document.getElementById('push_'+key); if(el2) el2.checked=!!(s.push&&s.push[key]);
+      });
+    }
+  }
+  loadNotifSettings();
+
+  // ---- Save settings
+  function saveSettings() {
+    var phone = document.getElementById('phoneInput')?.value || '';
+    var email = document.getElementById('emailInput')?.value || '';
+    var u; try{ u=JSON.parse(localStorage.getItem(TPPO_KEYS.user)||'null'); }catch(e){} if(!u) u={};
+    u.phone=phone; u.email=email;
+    localStorage.setItem(TPPO_KEYS.user,JSON.stringify(u));
+    showToast('Настройки сохранены');
+  }
+
+  // ---- Sidebar
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+
+  function openSidebar() { if (window.innerWidth <= 768) { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; } }
+  function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+  window.toggleSidebar = function() { sidebar.classList.contains('active')?closeSidebar():openSidebar(); };
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].clientX; });
+  document.addEventListener('touchend', (e) => { const dx = e.changedTouches[0].clientX - touchStartX; if (window.innerWidth <= 768) { if (dx > 70 && !sidebar.classList.contains('active')) openSidebar(); if (dx < -70 && sidebar.classList.contains('active')) closeSidebar(); } });
+  window.addEventListener('resize', () => { if (window.innerWidth > 768 && sidebar.classList.contains('active')) { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; } });
+
+  var routeMap = {'dashboard':'Дашборд.html','my-tickets':'МоиОбращения.html','call-order':'ОбратныйЗвонок.html','settings':'Настройки.html'};
+  document.querySelectorAll('[data-route]').forEach(function(item){ item.addEventListener('click',function(e){ e.stopPropagation(); var r=item.dataset.route; if(routeMap[r]&&r!=='settings') window.location.href=routeMap[r]; if(window.innerWidth<=768) setTimeout(closeSidebar,80); }); });
+
+  const logoButton = document.getElementById('logoDashboardBtn');
+  if (logoButton) logoButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href='Дашборд.html'; });
+
+  document.getElementById('desktopProfileInfo')?.addEventListener('click', () => window.location.href='Настройки.html');
+  document.getElementById('mobileProfileClickable')?.addEventListener('click', () => window.location.href='Настройки.html');
+  document.getElementById('desktopLogoutBtn')?.addEventListener('click', () => window.location.href='ФормаВхода.html');
+  document.getElementById('mobileLogoutBtn')?.addEventListener('click', () => window.location.href='ФормаВхода.html');
+
+  const saveButton = document.getElementById('saveSettingsBtn');
+  if (saveButton) saveButton.addEventListener('click', () => saveSettings());
+</script>
+</body>
+</html>

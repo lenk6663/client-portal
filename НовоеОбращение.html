@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Новое обращение — Неосистемы Северо-Запад</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #e9e2dc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #1f1f1f;
+      position: relative;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0;
+      width: 250px;
+      height: 100vh;
+      padding: 28px 0 0 28px;
+      background: #e9e2dc;
+      transition: left 0.3s ease;
+      z-index: 1000;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(2px);
+      z-index: 900;
+    }
+    .overlay.active { display: block; }
+
+    .logo-image {
+      display: block;
+      width: 100%;
+      max-width: 180px;
+      margin-bottom: 48px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .logo-image:hover { opacity: 0.8; }
+    .logo-image img { width: 100%; height: auto; display: block; pointer-events: none; }
+
+    .menu { display: flex; flex-direction: column; gap: 24px; }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 17px;
+      color: #8b8784;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .menu-item.active { color: #000; font-weight: 600; }
+    .menu-item svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
+
+    .main {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #e9e2dc;
+      position: relative;
+    }
+
+    .central-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding-left: 250px;
+    }
+
+    .card {
+      width: 780px;
+      max-width: 90vw;
+      background: linear-gradient(110deg, #fffdf7 0%, #f5b28d 100%);
+      border-radius: 28px;
+      box-shadow: 18px 20px 28px rgba(0,0,0,0.2);
+      padding: 40px 32px 38px 32px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .back-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.07);
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+      color: #333;
+      font-size: 16px;
+      text-decoration: none;
+    }
+    .back-link:hover { background: rgba(0,0,0,0.14); }
+
+    .card-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #000;
+      letter-spacing: -0.3px;
+    }
+
+    /* Fields */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2c241e;
+    }
+
+    .input, .select-field, textarea {
+      width: 100%;
+      background: #f8f6f5;
+      border: 2px solid #d4c9c2;
+      border-radius: 12px;
+      height: 48px;
+      padding: 0 16px;
+      font-size: 15px;
+      outline: none;
+      color: #1f1f1f;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+    }
+    .input:focus, .select-field:focus, textarea:focus { border-color: #f0884d; }
+
+    .select-wrap {
+      position: relative;
+    }
+    .select-wrap i.right {
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #8b7a6e;
+      font-size: 13px;
+    }
+    .select-field { appearance: none; cursor: pointer; }
+
+    .services-list { display:flex; flex-wrap:wrap; gap:6px; padding:12px; background:rgba(255,255,255,0.6); border-radius:14px; border:1.5px solid #d5cfc9; }
+    .svc-cb { display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border-radius:10px; cursor:pointer; transition:background 0.15s; font-size:14px; font-weight:500; user-select:none; }
+    .svc-cb:hover { background:rgba(255,130,68,0.1); }
+    .svc-cb input[type="checkbox"] { accent-color:#ff8244; width:15px; height:15px; cursor:pointer; flex-shrink:0; }
+    .svc-cb input:checked + span { color:#d95e15; font-weight:700; }
+
+    textarea { height: auto; min-height: 120px; padding: 12px 16px; resize: vertical; }
+
+    /* Priority buttons */
+    .priority-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .priority-btn {
+      flex: 1;
+      min-width: 100px;
+      height: 44px;
+      border: 2px solid #d4c9c2;
+      border-radius: 12px;
+      background: #f8f6f5;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #6b6460;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+    }
+    .priority-btn:hover { transform: translateY(-1px); }
+
+    .priority-btn.active-high {
+      border-color: #e53935;
+      background: #fff0ef;
+      color: #c62828;
+    }
+    .priority-btn.active-medium {
+      border-color: #f57c00;
+      background: #fff8f0;
+      color: #e65100;
+    }
+    .priority-btn.active-low {
+      border-color: #388e3c;
+      background: #f0fff0;
+      color: #2e7d32;
+    }
+
+    /* File upload area */
+    .upload-area {
+      width: 100%;
+      min-height: 80px;
+      border: 2px dashed #c8bfb8;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 18px 20px;
+    }
+    .upload-area:hover {
+      border-color: #f0884d;
+      background: rgba(255,255,255,0.85);
+    }
+    .upload-area.drag-over {
+      border-color: #f0884d;
+      background: rgba(240,136,77,0.08);
+    }
+    .upload-icon {
+      font-size: 28px;
+      color: #b8a89c;
+    }
+    .upload-text {
+      font-size: 14px;
+      color: #8b7a6e;
+      font-weight: 500;
+      text-align: center;
+    }
+    .upload-text span {
+      color: #f0884d;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .upload-hint { font-size: 12px; color: #a09898; }
+    .file-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; width: 100%; }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.75);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: #333;
+    }
+    .file-item i { color: #f0884d; }
+    .file-remove {
+      margin-left: auto;
+      cursor: pointer;
+      color: #aaa;
+      font-size: 14px;
+      transition: color 0.15s;
+    }
+    .file-remove:hover { color: #e53935; }
+
+    /* Required asterisk */
+    .req { color: #e53935; margin-left: 2px; }
+
+    /* Submit button */
+    .create-btn {
+      width: 520px;
+      max-width: 80vw;
+      height: 56px;
+      border: none;
+      border-radius: 14px;
+      margin-top: 28px;
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.3px;
+      font-family: 'Inter', sans-serif;
+    }
+    .create-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(0,0,0,0.18); }
+    .create-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    /* Desktop profile */
+    .profile {
+      position: fixed;
+      top: 36px; right: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 100;
+    }
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 6px 12px 6px 8px;
+      border-radius: 60px;
+      transition: background 0.2s;
+      color: #1a1a1a;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .profile-info:hover { background: rgba(0,0,0,0.06); }
+    .profile-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
+
+    .logout-btn {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 40px;
+      transition: background 0.2s;
+    }
+    .logout-btn:hover { background: rgba(0,0,0,0.08); }
+    .logout-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+    .logout-tooltip {
+      position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.75); color: white; font-size: 12px; font-weight: 500;
+      padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+      pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 30;
+      font-family: 'Inter', sans-serif;
+    }
+    .logout-btn:hover .logout-tooltip { opacity: 1; }
+
+    /* Mobile topbar */
+    .mobile-topbar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 0 18px;
+      gap: 12px;
+      background: #e9e2dc;
+      z-index: 15;
+      width: 100%;
+      position: sticky;
+      top: 0;
+    }
+    .burger {
+      width: 44px; height: 44px; border-radius: 16px; border: none;
+      background: rgba(255,255,255,0.75); backdrop-filter: blur(2px);
+      display: flex; flex-direction: column; justify-content: center;
+      align-items: center; gap: 5px; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex-shrink: 0;
+    }
+    .burger span { width: 22px; height: 2.5px; background: #1e1e1e; border-radius: 2px; }
+    .mobile-user-area { display: flex; align-items: center; gap: 14px; flex: 1; justify-content: flex-end; }
+    .mobile-profile-clickable {
+      display: flex; align-items: center; gap: 12px; cursor: pointer;
+      padding: 4px 8px 4px 4px; border-radius: 40px; transition: background 0.2s;
+    }
+    .mobile-profile-clickable:hover { background: rgba(0,0,0,0.06); }
+    .mobile-user-name { font-size: 17px; font-weight: 600; color: #1f1f1f; white-space: nowrap; }
+    .mobile-profile-icon {
+      width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.06); border-radius: 50%;
+    }
+    .mobile-logout-wrapper {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 6px; border-radius: 40px; transition: background 0.2s;
+    }
+    .mobile-logout-wrapper:hover { background: rgba(0,0,0,0.08); }
+    .mobile-logout-icon {
+      width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.05); border-radius: 50%;
+    }
+    .mobile-logout-tooltip {
+      position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.75); color: white; font-size: 12px; font-weight: 500;
+      padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+      pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 30;
+      font-family: 'Inter', sans-serif;
+    }
+    .mobile-logout-wrapper:hover .mobile-logout-tooltip { opacity: 1; }
+
+    /* Responsive */
+    @media (max-width: 1285px) {
+      .card { width: 85%; max-width: 700px; padding: 32px 24px; }
+      .create-btn { width: 70%; max-width: 480px; }
+      .central-content { padding-left: 250px; }
+    }
+
+    @media (max-width: 768px) {
+      body { height: auto; min-height: 100vh; }
+      .central-content { padding-left: 0; }
+      .sidebar {
+        position: fixed; left: -280px; width: 280px; height: 100vh;
+        transform: none; box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+        transition: left 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      }
+      .sidebar.active { left: 0; }
+      .main { justify-content: flex-start; align-items: center; padding: 0; min-height: 100vh; }
+      .profile { display: none; }
+      .mobile-topbar { display: flex; margin-bottom: 8px; }
+      .central-content { margin: 12px auto 40px auto; }
+      .card { width: calc(100% - 32px); max-width: 550px; padding: 24px 18px 28px 18px; border-radius: 24px; }
+      .card-header h1 { font-size: 24px; }
+      .create-btn { width: calc(100% - 32px); max-width: 450px; height: 52px; font-size: 18px; margin-top: 24px; margin-bottom: 20px; }
+      .priority-group { flex-direction: row; }
+    }
+
+    @media (max-width: 480px) {
+      .mobile-topbar { padding: 10px 14px; }
+      .central-content { margin: 8px auto 32px auto; }
+      .card { padding: 20px 14px; width: calc(100% - 24px); }
+      .card-header h1 { font-size: 22px; }
+      .create-btn { height: 50px; font-size: 17px; width: calc(100% - 24px); }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .card { width: 75%; max-width: 720px; }
+      .create-btn { width: 460px; }
+    }
+
+    @media (min-width: 1600px) {
+      .card { width: 1020px; padding: 44px 38px 42px; }
+      .create-btn { width: 560px; height: 60px; font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="logo-image" id="logoDashboardBtn">
+    <img src="https://neosystems.ru/upload/CAllcorp2/cf6/%D0%9D%D0%B5%D0%BE%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B.png"
+         alt="Неосистемы Северо-Запад"
+         onerror="this.onerror=null; this.src='https://placehold.co/200x60?text=Neosystems';">
+  </div>
+  <nav class="menu">
+    <div class="menu-item" data-route="dashboard">
+      <svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3z"/></svg>
+      <span>Главный</span>
+    </div>
+    <div class="menu-item active" data-route="my-tickets">
+      <svg viewBox="0 0 24 24"><path d="M3 13h4v8H3zm7-6h4v14h-4zm7-4h4v18h-4z"/></svg>
+      <span>Мои обращения</span>
+    </div>
+    <div class="menu-item" data-route="call-order">
+      <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.7 6.7l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V21c0 .6-.4 1-1 1C10.3 22 2 13.7 2 3c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1l-2.2 2.1z"/></svg>
+      <span>Заказать звонок</span>
+    </div>
+    <div class="menu-item" data-route="settings">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.22-1.12.53-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.43.34.69.22l2.39-.96c.51.41 1.05.72 1.63.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.22 1.12-.53 1.63-.94l2.39.96c.26.12.55.02.69-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z"/></svg>
+      <span>Настройки</span>
+    </div>
+  </nav>
+</div>
+
+<main class="main">
+  <!-- Mobile topbar -->
+  <div class="mobile-topbar">
+    <button class="burger" id="burgerBtn">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="mobile-user-area">
+      <div class="mobile-profile-clickable" id="mobileProfileClickable">
+        <div class="mobile-profile-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="#2c2c2c">
+            <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
+          </svg>
+        </div>
+        <span class="mobile-user-name">Александра</span>
+      </div>
+      <div class="mobile-logout-wrapper" id="mobileLogoutWrapper">
+        <div class="mobile-logout-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="#4a3b32">
+            <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h6v2H4c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h6v2H4v14z"/>
+          </svg>
+        </div>
+        <span class="mobile-logout-tooltip">Выход</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop profile -->
+  <div class="profile">
+    <div class="profile-info" id="desktopProfileInfo">
+      <div class="profile-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="#111">
+          <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
+        </svg>
+      </div>
+      <span>Александра</span>
+    </div>
+    <div class="logout-btn" id="desktopLogoutBtn">
+      <div class="logout-icon">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="#111">
+          <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h6v2H4c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h6v2H4v14z"/>
+        </svg>
+      </div>
+      <span class="logout-tooltip">Выход</span>
+    </div>
+  </div>
+
+  <div class="central-content">
+    <div class="card">
+      <div class="card-header">
+        <a class="back-link" id="backBtn" title="Назад к обращениям">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1>Новое обращение</h1>
+      </div>
+
+      <div class="field">
+        <label for="subjectInput">Тема<span class="req">*</span></label>
+        <input class="input" id="subjectInput" type="text" placeholder="Кратко опишите суть обращения" maxlength="200">
+      </div>
+
+      <div class="field">
+        <label>Срочность<span class="req">*</span></label>
+        <div class="priority-group">
+          <button type="button" class="priority-btn" data-urgency="high" id="btnHigh">
+            <i class="fa-solid fa-circle-exclamation"></i> Высокая
+          </button>
+          <button type="button" class="priority-btn active-medium" data-urgency="medium" id="btnMedium">
+            <i class="fa-solid fa-circle-minus"></i> Средняя
+          </button>
+          <button type="button" class="priority-btn" data-urgency="low" id="btnLow">
+            <i class="fa-solid fa-circle-check"></i> Низкая
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Услуга<span class="req">*</span> <span style="font-size:12px;font-weight:400;color:#999">(можно выбрать несколько)</span></label>
+        <div class="services-list" id="servicesList">
+          <label class="svc-cb"><input type="checkbox" value="Сопровождение 1С"> <span>Сопровождение 1С</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Анализ баз данных"> <span>Анализ баз данных</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Интеграция"> <span>Интеграция</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Сопровождение ERP"> <span>Сопровождение ERP</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Аудит лицензий"> <span>Аудит лицензий</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Реальная автоматизация"> <span>Реальная автоматизация</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Сервисы ИТС"> <span>Сервисы ИТС</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Переход с 1С:УПП"> <span>Переход с 1С:УПП</span></label>
+          <label class="svc-cb"><input type="checkbox" value="MES для производства"> <span>MES для производства</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Анализ и миграция"> <span>Анализ и миграция</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Администрирование"> <span>Администрирование</span></label>
+          <label class="svc-cb"><input type="checkbox" value="Разработка"> <span>Разработка</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="descInput">Описание<span class="req">*</span></label>
+        <textarea id="descInput" placeholder="Подробно опишите задачу или проблему, укажите версию программы, шаги для воспроизведения и т.д." rows="5" maxlength="3000"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Прикрепить файлы</label>
+        <div class="upload-area" id="uploadArea">
+          <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+          <div class="upload-text">
+            Перетащите файлы сюда или <span id="uploadTrigger">выберите</span>
+          </div>
+          <div class="upload-hint">Максимум 10 МБ на файл • PNG, JPG, PDF, XLSX, DOC, ZIP</div>
+        </div>
+        <div class="file-list" id="fileList"></div>
+        <input type="file" id="fileInput" style="display:none" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.xlsx,.xls,.doc,.docx,.zip,.txt,.csv">
+      </div>
+    </div>
+
+    <button class="create-btn" id="createBtn">Создать обращение</button>
+  </div>
+</main>
+
+<script>
+// ===== SHARED DATA =====
+const TPPO_KEYS = {
+  tickets: 'tppo_tickets',
+  msgs: function(id) { return 'tppo_msgs_' + id; },
+  user: 'tppo_user',
+  settings: 'tppo_settings'
+};
+const DATA_VERSION = '2';
+
+const INITIAL_TICKETS = [
+  { id:'ticket_1001', number:'1001', subject:'Настройка отчётности', service:'Сопровождение 1С', services:['Сопровождение 1С'], status:'done', statusLabel:'Завершено', responsible:'Иванов И.И.', hours:5, cost:15000, createdAt:'12.02.2026', updatedAt:'15.02.2026', urgency:'medium', description:'Требуется настройка отчётности в 1С.', type:'ticket', files:[], approval:null, review:{rating:5,comment:'Всё отлично!',closedAt:'15.02.2026'}, history:[{date:'12.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'15.02.2026',time:'14:30:00',author:'Иванов И.И.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
+  { id:'ticket_1002', number:'1002', subject:'Ошибка в базе данных', service:'Анализ баз данных', services:['Анализ баз данных'], status:'on_approval', statusLabel:'На согласовании', responsible:'Петров П.П.', hours:3, cost:9000, createdAt:'15.02.2026', updatedAt:'18.02.2026', urgency:'high', description:'При открытии формы документа происходит ошибка.', type:'ticket', files:[], approval:{status:'pending',contract:'СЦ-11619',rate:1400,hours:24,discount:5,cost:31920,deadline:'25.04.2026',proposedAt:'20.04.2026',effect:'При открытии в форме не отображается расширение объекта. Требуется доработка.'}, review:null, history:[{date:'15.02.2026',time:'09:14:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'15.02.2026',time:'10:00:00',author:'Петров П.П.',field:'status',oldValue:'Новый',newValue:'В работе'},{date:'16.02.2026',time:'14:00:00',author:'Петров П.П.',field:'status',oldValue:'В работе',newValue:'На оценке'},{date:'18.02.2026',time:'09:30:00',author:'Петров П.П.',field:'status',oldValue:'На оценке',newValue:'На согласовании'}] },
+  { id:'ticket_1003', number:'1003', subject:'Интеграция оборудования', service:'Интеграция', services:['Интеграция'], status:'new', statusLabel:'Новый', responsible:'Сидоров А.А.', hours:0, cost:0, createdAt:'18.02.2026', updatedAt:'18.02.2026', urgency:'medium', description:'Необходима интеграция нового оборудования.', type:'ticket', files:[], approval:null, review:null, history:[{date:'18.02.2026',time:'10:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'}] },
+  { id:'ticket_1004', number:'1004', subject:'Обновление ERP', service:'Сопровождение ERP', services:['Сопровождение ERP'], status:'done', statusLabel:'Завершено', responsible:'Кузнецов Д.Д.', hours:12, cost:36000, createdAt:'20.02.2026', updatedAt:'25.02.2026', urgency:'low', description:'Обновление ERP-системы.', type:'ticket', files:[], approval:null, review:{rating:4,comment:'',closedAt:'25.02.2026'}, history:[{date:'20.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'25.02.2026',time:'16:00:00',author:'Кузнецов Д.Д.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
+  { id:'ticket_1005', number:'1005', subject:'Консультация по лицензиям', service:'Аудит лицензий', services:['Аудит лицензий'], status:'done', statusLabel:'Завершено', responsible:'Смирнов С.С.', hours:4, cost:12000, createdAt:'25.02.2026', updatedAt:'28.02.2026', urgency:'low', description:'Консультация по лицензионному портфелю.', type:'ticket', files:[], approval:null, review:null, history:[{date:'25.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'28.02.2026',time:'15:00:00',author:'Смирнов С.С.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
+  { id:'ticket_1006', number:'1006', subject:'Разработка модуля', service:'Реальная автоматизация', services:['Реальная автоматизация','Интеграция'], status:'pending_eval', statusLabel:'На оценке', responsible:'Орлов В.В.', hours:10, cost:30000, createdAt:'02.03.2026', updatedAt:'10.03.2026', urgency:'high', description:'Разработка нового модуля интеграции с внешней системой.', type:'ticket', files:[], approval:null, review:null, history:[{date:'02.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'05.03.2026',time:'10:00:00',author:'Орлов В.В.',field:'status',oldValue:'Новый',newValue:'В работе'},{date:'10.03.2026',time:'11:00:00',author:'Орлов В.В.',field:'status',oldValue:'В работе',newValue:'На оценке'}] },
+  { id:'ticket_1007', number:'1007', subject:'Ошибка в отчёте', service:'Сервисы ИТС', services:['Сервисы ИТС'], status:'done', statusLabel:'Завершено', responsible:'Федоров Н.Н.', hours:2, cost:6000, createdAt:'05.03.2026', updatedAt:'07.03.2026', urgency:'medium', description:'В отчёте неверно отображаются данные.', type:'ticket', files:[], approval:null, review:null, history:[{date:'05.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'07.03.2026',time:'14:00:00',author:'Федоров Н.Н.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
+  { id:'ticket_1008', number:'1008', subject:'Переход на новую систему', service:'Переход с 1С:УПП', services:['Переход с 1С:УПП'], status:'progress', statusLabel:'В работе', responsible:'Алексеев К.К.', hours:8, cost:24000, createdAt:'10.03.2026', updatedAt:'15.03.2026', urgency:'high', description:'Переход с устаревшей системы.', type:'ticket', files:[], approval:null, review:null, history:[{date:'10.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'11.03.2026',time:'10:00:00',author:'Алексеев К.К.',field:'status',oldValue:'Новый',newValue:'В работе'}] },
+  { id:'ticket_1009', number:'1009', subject:'Настройка MES', service:'MES для производства', services:['MES для производства'], status:'new', statusLabel:'Новый', responsible:'Васильев Л.Л.', hours:0, cost:0, createdAt:'15.03.2026', updatedAt:'15.03.2026', urgency:'medium', description:'Настройка системы управления производством.', type:'ticket', files:[], approval:null, review:null, history:[{date:'15.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'}] },
+  { id:'ticket_1010', number:'1010', subject:'Подключение сервиса', service:'Сервисы ИТС', services:['Сервисы ИТС'], status:'done', statusLabel:'Завершено', responsible:'Павлов М.М.', hours:3, cost:9000, createdAt:'20.03.2026', updatedAt:'22.03.2026', urgency:'low', description:'Подключение сервисов ИТС-ПРОФ.', type:'ticket', files:[], approval:null, review:null, history:[{date:'20.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'22.03.2026',time:'15:00:00',author:'Павлов М.М.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
+  { id:'ticket_1011', number:'1011', subject:'Миграция данных', service:'Анализ и миграция', services:['Анализ и миграция'], status:'progress', statusLabel:'В работе', responsible:'Новиков А.С.', hours:14, cost:42000, createdAt:'22.03.2026', updatedAt:'25.03.2026', urgency:'high', description:'Перенос данных из старой системы.', type:'ticket', files:[], approval:null, review:null, history:[{date:'22.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'24.03.2026',time:'09:00:00',author:'Новиков А.С.',field:'status',oldValue:'Новый',newValue:'В работе'}] },
+  { id:'ticket_1012', number:'1012', subject:'Настройка прав доступа', service:'Администрирование', services:['Администрирование'], status:'cancelled', statusLabel:'Отменено', responsible:'Морозова Е.В.', hours:2, cost:4500, createdAt:'25.03.2026', updatedAt:'26.03.2026', urgency:'low', description:'Настройка ролей и прав пользователей.', type:'ticket', files:[], approval:null, review:null, history:[{date:'25.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'26.03.2026',time:'10:30:00',author:'Александрова А.А.',field:'status',oldValue:'Новый',newValue:'Отменено'}] }
+];
+
+const INITIAL_MESSAGES = {
+  'ticket_1002': [
+    { id: 'msg_1', author: 'client', name: 'Александрова А.А.', text: 'Добрый день! Помогите разобраться с ошибкой в базе данных.', time: '09:14', date: '15.02.2026', isFirst: true },
+    { id: 'msg_2', author: 'staff', name: 'Петров П.П.', text: 'Здравствуйте! Принял задачу в работу. Уточните, при каких действиях возникает ошибка?', time: '09:45', date: '15.02.2026' },
+    { id: 'msg_3', author: 'client', name: 'Александрова А.А.', text: 'Ошибка возникает при открытии документа «Поступление товаров».', time: '10:03', date: '15.02.2026' },
+    { id: 'msg_4', author: 'staff', name: 'Петров П.П.', text: 'Понял. Скорее всего это связано с последним обновлением. Займёмся диагностикой в течение дня.', time: '10:15', date: '15.02.2026' }
+  ],
+  'ticket_1008': [
+    { id: 'msg_1', author: 'client', name: 'Александрова А.А.', text: 'Добрый день! Подскажите, с чего лучше начать переход с 1С:УПП?', time: '11:58', date: '10.03.2026', isFirst: true },
+    { id: 'msg_2', author: 'staff', name: 'Алексеев К.К.', text: 'Здравствуйте! Уточните, пожалуйста, какие основные процессы автоматизированы в УПП?', time: '12:10', date: '10.03.2026' },
+    { id: 'msg_3', author: 'client', name: 'Александрова А.А.', text: 'Производство, склады, закупки, продажи, зарплата. Система сильно доработана.', time: '12:24', date: '10.03.2026' },
+    { id: 'msg_4', author: 'staff', name: 'Алексеев К.К.', text: 'При наличии доработок переход обычно занимает 3–6 месяцев. Предлагаю начать с аудита текущих доработок.', time: '12:35', date: '10.03.2026' }
+  ]
+};
+
+function getTickets() {
+  try { return JSON.parse(localStorage.getItem(TPPO_KEYS.tickets) || 'null') || []; }
+  catch(e) { return []; }
+}
+
+function saveTickets(arr) {
+  localStorage.setItem(TPPO_KEYS.tickets, JSON.stringify(arr));
+}
+
+function getMessages(id) {
+  try { return JSON.parse(localStorage.getItem(TPPO_KEYS.msgs(id)) || 'null') || []; }
+  catch(e) { return []; }
+}
+
+function saveMessages(id, arr) {
+  localStorage.setItem(TPPO_KEYS.msgs(id), JSON.stringify(arr));
+}
+
+function initData() {
+  if (localStorage.getItem('tppo_v') === DATA_VERSION) return;
+  localStorage.setItem('tppo_v', DATA_VERSION);
+  saveTickets(INITIAL_TICKETS);
+  Object.keys(INITIAL_MESSAGES).forEach(function(id) { saveMessages(id, INITIAL_MESSAGES[id]); });
+  localStorage.setItem(TPPO_KEYS.user, JSON.stringify({ name: 'Александра', fullName: 'Александрова Александра Александровна', phone: '+7 999 123-45-67', email: 'aleksandra@example.com' }));
+  localStorage.setItem(TPPO_KEYS.settings, JSON.stringify({ email: { newMessage: true, statusChange: true, newOffer: false, responsible: false }, push: { newMessage: true, statusChange: false, newOffer: false, responsible: true } }));
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('appToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'appToast';
+    toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function() {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 2800);
+}
+
+function handleRoute(route) {
+  var map = { 'dashboard': 'Дашборд.html', 'my-tickets': 'МоиОбращения.html', 'call-order': 'ОбратныйЗвонок.html', 'settings': 'Настройки.html' };
+  if (map[route]) window.location.href = map[route];
+}
+
+// ===== SIDEBAR =====
+(function initSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('overlay');
+  var burgerBtn = document.getElementById('burgerBtn');
+  if (!sidebar) return;
+
+  function openSidebar() {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('active');
+      if (overlay) overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  window.toggleSidebar = function() { sidebar.classList.contains('active') ? closeSidebar() : openSidebar(); };
+  if (burgerBtn) burgerBtn.addEventListener('click', function(e) { e.stopPropagation(); window.toggleSidebar(); });
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+
+  var tx = 0;
+  document.addEventListener('touchstart', function(e) { tx = e.changedTouches[0].clientX; });
+  document.addEventListener('touchend', function(e) {
+    var d = e.changedTouches[0].clientX - tx;
+    if (window.innerWidth <= 768) {
+      if (d > 70 && !sidebar.classList.contains('active')) openSidebar();
+      if (d < -70 && sidebar.classList.contains('active')) closeSidebar();
+    }
+  });
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
+      sidebar.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.querySelectorAll('[data-route]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      handleRoute(item.dataset.route);
+      if (window.innerWidth <= 768) setTimeout(closeSidebar, 80);
+    });
+  });
+
+  var logoBtn = document.getElementById('logoDashboardBtn');
+  if (logoBtn) logoBtn.addEventListener('click', function() { window.location.href = 'Дашборд.html'; });
+})();
+
+// ===== PROFILE & LOGOUT =====
+(function initNav() {
+  ['#desktopProfileInfo', '#mobileProfileClickable'].forEach(function(sel) {
+    var el = document.querySelector(sel);
+    if (el) el.addEventListener('click', function() { window.location.href = 'Настройки.html'; });
+  });
+  ['#desktopLogoutBtn', '#mobileLogoutWrapper'].forEach(function(sel) {
+    var el = document.querySelector(sel);
+    if (el) el.addEventListener('click', function() { window.location.href = 'ФормаВхода.html'; });
+  });
+  var backBtn = document.getElementById('backBtn');
+  if (backBtn) backBtn.addEventListener('click', function() { window.location.href = 'МоиОбращения.html'; });
+})();
+
+// ===== PRIORITY SELECTION =====
+var selectedUrgency = 'medium';
+document.querySelectorAll('.priority-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.priority-btn').forEach(function(b) {
+      b.classList.remove('active-high', 'active-medium', 'active-low');
+    });
+    var urgency = btn.dataset.urgency;
+    selectedUrgency = urgency;
+    btn.classList.add('active-' + urgency);
+  });
+});
+
+// ===== FILE UPLOAD =====
+var attachedFiles = [];
+
+function renderFileList() {
+  var list = document.getElementById('fileList');
+  list.innerHTML = '';
+  attachedFiles.forEach(function(file, idx) {
+    var item = document.createElement('div');
+    item.className = 'file-item';
+    item.innerHTML = '<i class="fa-solid fa-paperclip"></i><span>' + escapeHtml(file.name) + '</span><span style="color:#999;font-size:12px;margin-left:4px">(' + formatSize(file.size) + ')</span><span class="file-remove" data-idx="' + idx + '"><i class="fa-solid fa-xmark"></i></span>';
+    list.appendChild(item);
+  });
+  list.querySelectorAll('.file-remove').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      attachedFiles.splice(parseInt(btn.dataset.idx), 1);
+      renderFileList();
+    });
+  });
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' Б';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' МБ';
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+var uploadArea = document.getElementById('uploadArea');
+var fileInput = document.getElementById('fileInput');
+var uploadTrigger = document.getElementById('uploadTrigger');
+
+uploadTrigger.addEventListener('click', function(e) { e.stopPropagation(); fileInput.click(); });
+uploadArea.addEventListener('click', function() { fileInput.click(); });
+
+fileInput.addEventListener('change', function() {
+  Array.from(fileInput.files).forEach(function(f) {
+    if (f.size <= 10 * 1024 * 1024) attachedFiles.push(f);
+    else showToast('Файл ' + f.name + ' превышает 10 МБ');
+  });
+  fileInput.value = '';
+  renderFileList();
+});
+
+uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+uploadArea.addEventListener('dragleave', function() { uploadArea.classList.remove('drag-over'); });
+uploadArea.addEventListener('drop', function(e) {
+  e.preventDefault();
+  uploadArea.classList.remove('drag-over');
+  Array.from(e.dataTransfer.files).forEach(function(f) {
+    if (f.size <= 10 * 1024 * 1024) attachedFiles.push(f);
+    else showToast('Файл ' + f.name + ' превышает 10 МБ');
+  });
+  renderFileList();
+});
+
+// ===== FORM SUBMIT =====
+document.getElementById('createBtn').addEventListener('click', function() {
+  var subject = document.getElementById('subjectInput').value.trim();
+  var description = document.getElementById('descInput').value.trim();
+
+  if (!subject) { showToast('Укажите тему обращения'); document.getElementById('subjectInput').focus(); return; }
+  if (!description) { showToast('Добавьте описание обращения'); document.getElementById('descInput').focus(); return; }
+
+  initData();
+
+  var tickets = getTickets();
+  var numbers = tickets.map(function(t) { return parseInt(t.number) || 0; });
+  var maxNum = numbers.length ? Math.max.apply(null, numbers) : 1012;
+  var newNum = String(maxNum + 1);
+  var newId = 'ticket_' + newNum;
+
+  var now = new Date();
+  var day = String(now.getDate()).padStart(2,'0');
+  var mon = String(now.getMonth()+1).padStart(2,'0');
+  var yr = now.getFullYear();
+  var dateStr = day + '.' + mon + '.' + yr;
+  var timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  var secStr = String(now.getSeconds()).padStart(2,'0');
+
+  var checkedServices = [];
+  document.querySelectorAll('#servicesList input:checked').forEach(function(cb){ checkedServices.push(cb.value); });
+  if(!checkedServices.length){ showToast('Выберите хотя бы одну услугу'); return; }
+
+  var newTicket = {
+    id: newId,
+    number: newNum,
+    subject: subject,
+    service: checkedServices[0],
+    services: checkedServices,
+    status: 'new',
+    statusLabel: 'Новый',
+    responsible: '',
+    hours: 0,
+    cost: 0,
+    createdAt: dateStr,
+    updatedAt: dateStr,
+    urgency: selectedUrgency,
+    description: description,
+    type: 'ticket',
+    files: [],
+    approval: null,
+    review: null,
+    history: [{ date: dateStr, time: timeStr+':'+secStr, author: 'Александрова А.А.', field: 'status', oldValue: '', newValue: 'Новый' }]
+  };
+
+  tickets.push(newTicket);
+  saveTickets(tickets);
+
+  // Первое сообщение = описание обращения
+  var firstMsg = [{ id: 'msg_1', author: 'client', name: 'Александрова А.А.', text: description, time: timeStr, date: dateStr, isFirst: true }];
+  saveMessages(newId, firstMsg);
+
+  var btn = document.getElementById('createBtn');
+  btn.disabled = true;
+  btn.textContent = 'Создаётся...';
+
+  setTimeout(function() {
+    window.location.href = 'ДеталиОбращения.html?id=' + newId;
+  }, 400);
+});
+
+// Init
+initData();
+</script>
+</body>
+</html>

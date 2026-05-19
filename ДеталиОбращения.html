@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Обращение №1002 — Неосистемы Северо-Запад</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #e9e2dc;
+      color: #1f1f1f;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    :root {
+      --bg: #e9e2dc;
+      --card-gradient: linear-gradient(115deg, #f6efe9 0%, #f2b28e 100%);
+      --white: #fff;
+      --accent: #ff7f3f;
+      --accent-yellow: #f4c34e;
+      --text: #1f1f1f;
+      --muted: #857d78;
+      --border: #a7a09b;
+      --shadow: 0 16px 28px rgba(0, 0, 0, .18);
+      --radius: 28px;
+    }
+
+    /* ===== HEADER ===== */
+    .topbar {
+      width: 100%;
+      padding: 24px 56px 0 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-block {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .logo {
+      width: 180px;
+      max-width: 100%;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+    }
+
+    .logo:hover {
+      opacity: 0.8;
+    }
+
+    .logo img {
+      width: 100%;
+      display: block;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 500;
+      color: #5a524a;
+      cursor: pointer;
+      width: fit-content;
+      transition: 0.2s;
+      padding: 6px 12px;
+      border-radius: 12px;
+    }
+
+    .back-btn:hover {
+      background: rgba(0, 0, 0, 0.06);
+      color: #1f1f1f;
+    }
+
+    .right-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .profile-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 40px;
+      transition: background 0.2s;
+    }
+
+    .profile-name:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 40px;
+      transition: 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .icon-btn svg {
+      width: 30px;
+      height: 30px;
+      fill: #111;
+    }
+
+    .tooltip {
+      position: absolute;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 30;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .icon-btn:hover .tooltip {
+      opacity: 1;
+    }
+
+    /* Мобильная кнопка открытия чата */
+    .mobile-chat-toggle {
+      display: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 40px;
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mobile-chat-toggle:hover {
+      transform: scale(1.05);
+    }
+
+    /* ===== MAIN ===== */
+    .page {
+      width: 100%;
+      padding: 24px 56px 42px;
+      display: flex;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .left-column {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== LEFT SIDE ===== */
+    .ticket-card {
+      background: var(--card-gradient);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      padding: 28px 32px 28px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .ticket-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .status {
+      color: #ff6c21;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .ticket-title {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+
+    .dates {
+      text-align: right;
+      color: #9b8f88;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.45;
+      padding-top: 8px;
+      white-space: nowrap;
+    }
+
+    .form-block {
+      margin-top: 8px;
+      flex: 1;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .row label {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2c241e;
+    }
+
+    .input,
+    .textarea,
+    .select {
+      width: 100%;
+      border: 2px solid #d4c9c2;
+      background: #f8f6f5;
+      border-radius: 14px;
+      font-family: 'Inter', sans-serif;
+      color: #1f1f1f;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .input:focus,
+    .textarea:focus,
+    .select:focus {
+      border-color: #f0884d;
+    }
+
+    .input,
+    .select {
+      height: 48px;
+      padding: 0 16px;
+      font-size: 15px;
+    }
+
+    .textarea {
+      resize: vertical;
+      min-height: 200px;
+      padding: 14px 16px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .priority-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .priority {
+      height: 46px;
+      border: 2px solid #d4c9c2;
+      background: #f8f6f5;
+      border-radius: 14px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+      color: #5a524a;
+    }
+
+    .priority:hover {
+      background: #fff;
+      border-color: #f0884d;
+      transform: translateY(-1px);
+    }
+
+    .priority.active {
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .priority i {
+      font-size: 14px;
+    }
+
+    .priority.active i {
+      color: white;
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select {
+      appearance: none;
+      cursor: pointer;
+      padding-right: 40px;
+    }
+
+    .select-wrap i {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      pointer-events: none;
+      color: #8b7a6e;
+    }
+
+    .attach-icon {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      color: #d96c2b;
+      font-size: 20px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 6px;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .attach-icon:hover {
+      background: white;
+      transform: scale(1.08);
+    }
+
+    /* ===== RIGHT SIDE ===== */
+    .chat-card {
+      width: 400px;
+      background: var(--card-gradient);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-tabs {
+      position: absolute;
+      top: -42px;
+      left: 20px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .tab {
+      height: 42px;
+      padding: 0 20px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      background: #c9c1b9;
+      color: #fff;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.2s;
+    }
+
+    .tab i {
+      font-size: 14px;
+    }
+
+    .tab.active {
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+      color: white;
+      padding-bottom: 14px;
+      margin-bottom: -2px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tab:not(.active):hover {
+      background: #b8aea4;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 6px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: #d28c6f transparent;
+      min-height: 0;
+    }
+
+    .chat-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-body::-webkit-scrollbar-thumb {
+      background: #d28c6f;
+      border-radius: 10px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .message {
+      max-width: 85%;
+      border-radius: 18px;
+      padding: 12px 14px 10px;
+      position: relative;
+      line-height: 1.45;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .message.in {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .message.out {
+      align-self: flex-end;
+      background: white;
+    }
+
+    .message-name {
+      font-weight: 700;
+      color: #d96c2b;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .message-time {
+      text-align: right;
+      font-size: 11px;
+      color: #a0958d;
+      margin-top: 8px;
+    }
+
+    .history-item {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .history-status {
+      font-weight: 800;
+      color: #d96c2b;
+      margin-top: 6px;
+    }
+
+    .approval-item {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+
+    .approval-label {
+      font-weight: 700;
+      color: #2c241e;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .approval-value {
+      font-size: 14px;
+      color: #1f1f1f;
+    }
+
+    .approval-actions {
+      display: flex;
+      gap: 10px;
+      padding: 12px 0 4px;
+    }
+    .approval-actions button {
+      flex: 1;
+      border: none;
+      border-radius: 12px;
+      padding: 11px 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .approval-actions button:hover { opacity: 0.85; }
+    .btn-approve { background: linear-gradient(90deg,#56b947,#2e7d32); color: #fff; }
+    .btn-reject  { background: #fff; border: 2px solid #c62828 !important; color: #c62828; }
+
+    .file-list-inline { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .file-tag {
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(255,255,255,0.7); border:1px solid #d5cfc9;
+      border-radius:999px; padding:5px 12px; font-size:13px;
+    }
+    .file-tag .rm { cursor:pointer; color:#999; margin-left:2px; }
+    .file-tag .rm:hover { color:#e53935; }
+
+    .close-ticket-btn {
+      width: 100%;
+      background: linear-gradient(90deg, #56b947, #2e7d32);
+      border: none;
+      border-radius: 14px;
+      padding: 13px;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .close-ticket-btn:hover { opacity: 0.88; }
+
+    .review-modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .review-modal-bg.open { display: flex; }
+    .review-modal {
+      background: #fffdf7;
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .review-modal h3 { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+    .star-row { display:flex; gap:8px; margin-bottom:16px; font-size: 32px; cursor:pointer; }
+    .star-row .star { color: #ddd; transition: color 0.15s; }
+    .star-row .star.active { color: #f5c34e; }
+    .review-modal textarea {
+      width: 100%; border: 1.5px solid #d5cfc9; border-radius: 12px;
+      padding: 12px; font-family: 'Inter',sans-serif; font-size: 14px;
+      resize: none; outline: none; margin-bottom: 16px;
+      background: rgba(255,255,255,0.7);
+    }
+    .review-modal-btns { display:flex; gap:10px; }
+    .review-modal-btns button { flex:1; border:none; border-radius:12px; padding:12px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; }
+    .btn-submit-review { background: linear-gradient(90deg,#f2c04d,#ff8244); color:#fff; }
+    .btn-cancel-review { background: rgba(0,0,0,0.07); color: #555; }
+
+    .chat-input {
+      margin-top: 16px;
+      background: white;
+      border-radius: 20px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      border: 1px solid #d4c9c2;
+      flex-shrink: 0;
+    }
+
+    .chat-input input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      color: #1f1f1f;
+      padding: 12px 0;
+    }
+
+    .chat-input input::placeholder {
+      color: #a0958d;
+    }
+
+    .chat-input i {
+      color: #d96c2b;
+      font-size: 22px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .chat-input i:hover {
+      transform: scale(1.08);
+      color: #ff8244;
+    }
+
+    /* ===== BUTTON ===== */
+    .save-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 28px;
+    }
+
+    .save-btn {
+      width: 100%;
+      max-width: 480px;
+      height: 56px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.3px;
+    }
+
+    .save-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    /* ===== МОБИЛЬНАЯ ВЫЕЗЖАЮЩАЯ ПАНЕЛЬ ===== */
+    .mobile-chat-panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 85%;
+      max-width: 400px;
+      height: 100vh;
+      background: var(--card-gradient);
+      box-shadow: -4px 0 28px rgba(0, 0, 0, 0.2);
+      z-index: 300;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .mobile-chat-panel.open {
+      right: 0;
+    }
+
+    .mobile-chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-chat-header h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f1f1f;
+    }
+
+    .mobile-chat-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #5a524a;
+      padding: 8px;
+    }
+
+    .mobile-chat-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+
+    .mobile-tab {
+      padding: 10px 20px;
+      border-radius: 30px;
+      background: #c9c1b9;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .mobile-tab.active {
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+    }
+
+    .mobile-chat-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .mobile-content-item {
+      display: none;
+    }
+
+    .mobile-content-item.active {
+      display: block;
+    }
+
+    /* Затемнение */
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 250;
+      display: none;
+    }
+
+    .mobile-overlay.active {
+      display: block;
+    }
+
+    /* ===== АДАПТИВНОСТЬ ===== */
+    @media (max-width: 1100px) {
+      .topbar {
+        padding: 20px 32px 0 32px;
+      }
+      .page {
+        padding: 20px 32px 32px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .page {
+        flex-direction: column;
+      }
+      .chat-card {
+        display: none;
+      }
+      .mobile-chat-toggle {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .topbar {
+        padding: 16px 18px 0 18px;
+        flex-wrap: wrap;
+      }
+      .logo-block {
+        flex: 1;
+      }
+      .logo {
+        width: 140px;
+      }
+      .right-header {
+        gap: 12px;
+      }
+      .profile-name {
+        font-size: 16px;
+      }
+      .icon-btn {
+        width: 38px;
+        height: 38px;
+      }
+      .icon-btn svg {
+        width: 24px;
+        height: 24px;
+      }
+      .mobile-chat-toggle {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+      }
+      .page {
+        padding: 16px 16px 24px;
+      }
+      .ticket-card {
+        padding: 20px 18px;
+      }
+      .ticket-top {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .ticket-title {
+        font-size: 28px;
+      }
+      .dates {
+        text-align: left;
+        white-space: normal;
+      }
+      .row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .priority-group {
+        gap: 8px;
+      }
+      .priority {
+        flex: 1 1 calc(50% - 8px);
+        justify-content: center;
+        min-width: 120px;
+        padding: 0 14px;
+        font-size: 13px;
+      }
+      .save-btn {
+        width: 100%;
+        height: 52px;
+        font-size: 17px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .ticket-title {
+        font-size: 24px;
+      }
+      .textarea {
+        min-height: 160px;
+      }
+      .priority {
+        font-size: 12px;
+        padding: 0 10px;
+      }
+      .message {
+        max-width: 95%;
+      }
+      .save-btn {
+        height: 48px;
+        font-size: 16px;
+      }
+      .mobile-chat-panel {
+        width: 100%;
+        max-width: 100%;
+      }
+      .profile-name {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="topbar">
+  <div class="logo-block">
+    <div class="logo" id="logoBtn">
+      <img src="https://neosystems.ru/upload/CAllcorp2/cf6/%D0%9D%D0%B5%D0%BE%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B.png"
+           alt="Неосистемы Северо-Запад"
+           onerror="this.onerror=null; this.src='https://placehold.co/200x60?text=Neosystems';">
+    </div>
+    <div class="back-btn" id="backBtn">
+      <i class="fa-solid fa-chevron-left"></i>
+      <span>Назад</span>
+    </div>
+  </div>
+  
+  <div class="right-header">
+    <div class="profile">
+      <div class="icon-btn" id="profileIcon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
+        </svg>
+        <span class="tooltip">Профиль</span>
+      </div>
+      <div class="profile-name" id="profileName">Александра</div>
+      <div class="icon-btn" id="logoutBtn">
+        <svg viewBox="0 0 24 24">
+          <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h6v2H4c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h6v2H4v14z"/>
+        </svg>
+        <span class="tooltip">Выход</span>
+      </div>
+    </div>
+    <button class="mobile-chat-toggle" id="mobileChatToggle">
+      <i class="fa-solid fa-comment-dots"></i>
+    </button>
+  </div>
+</header>
+
+<!-- Затемнение -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<!-- Мобильная выезжающая панель -->
+<div class="mobile-chat-panel" id="mobileChatPanel">
+  <div class="mobile-chat-header">
+    <h3>Обсуждение</h3>
+    <button class="mobile-chat-close" id="mobileChatClose"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="mobile-chat-tabs">
+    <button class="mobile-tab active" data-mobile-tab="chat">Чат</button>
+    <button class="mobile-tab" data-mobile-tab="history">История</button>
+    <button class="mobile-tab" data-mobile-tab="approval">Согласование</button>
+  </div>
+  <div class="mobile-chat-content">
+    <div class="mobile-content-item active" id="mobileChatItem">
+      <div class="chat-body" style="max-height: 60vh;">
+        <div class="message out">
+          Добрый день! Подскажите, пожалуйста, с чего лучше начать переход с 1С:УПП?
+          <div class="message-time">11:58</div>
+        </div>
+        <div class="message in">
+          <div class="message-name">Иван Дибров</div>
+          Здравствуйте!<br><br>Спасибо за обращение.<br>Уточните, пожалуйста, какие основные процессы у вас сейчас автоматизированы в УПП (производство, склад, зарплата и т.д.)?
+          <div class="message-time">11:58</div>
+        </div>
+        <div class="message out">
+          <div class="message-name">Александра Александрова</div>
+          У нас производство (позаказный учет, раскрой), склады, закупки, продажи, зарплата (сделка, премии), ЕГАИС, маркировка. Система сильно доработана.
+          <div class="message-time">11:58</div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <i class="fa-solid fa-paperclip" id="mobileChatAttachBtn"></i>
+        <input type="text" placeholder="Напишите сообщение..." id="mobileChatMessageInput">
+        <i class="fa-solid fa-paper-plane" id="mobileSendMessageBtn"></i>
+      </div>
+    </div>
+    <div class="mobile-content-item" id="mobileHistoryItem">
+      <div class="chat-body" style="max-height: 70vh;">
+        <div class="history-item">
+          10.02.2026 15:14:27<br>
+          <div class="history-status">Статус: новое</div>
+          Ответственный: Иванов Даниил
+        </div>
+        <div class="history-item">
+          10.02.2026 16:11:32<br>
+          <div class="history-status">Статус: на оценке</div>
+          Ответственный: Дибров Иван
+        </div>
+        <div class="history-item">
+          11.02.2026 09:23:15<br>
+          <div class="history-status">Статус: выполняется</div>
+          Ответственный: Дибров Иван
+        </div>
+      </div>
+    </div>
+    <div class="mobile-content-item" id="mobileApprovalItem">
+      <div class="chat-body" style="max-height: 70vh;">
+        <div class="approval-item">
+          <div class="approval-label">Договор</div>
+          <div class="approval-value">СЦ-11619</div>
+        </div>
+        <div class="approval-item">
+          <div class="approval-label">Ставка</div>
+          <div class="approval-value">1 400 р./час</div>
+        </div>
+        <div class="approval-item">
+          <div class="approval-label">Планируемые часы</div>
+          <div class="approval-value">24 ч.</div>
+        </div>
+        <div class="approval-item">
+          <div class="approval-label">Размер скидки</div>
+          <div class="approval-value">5%</div>
+        </div>
+        <div class="approval-item">
+          <div class="approval-label">Сумма оплаты</div>
+          <div class="approval-value">31 920 р.</div>
+        </div>
+        <div class="approval-item">
+          <div class="approval-label">Плановая дата выполнения</div>
+          <div class="approval-value">25.04.2026</div>
+        </div>
+        <div class="approval-item">
+          <div class="approval-label">Дата передачи на проверку</div>
+          <div class="approval-value">20.04.2026</div>
+        </div>
+        <div class="approval-item">
+          <div class="approval-label">Ожидаемый эффект</div>
+          <div class="approval-value">При открытии в форме не отображается расширение объекта. Требуется доработка.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<main class="page">
+
+  <!-- LEFT COLUMN -->
+  <section class="left-column">
+    <div class="ticket-card">
+      <div class="ticket-top">
+        <div>
+          <div class="status">Статус: новое</div>
+          <h1 class="ticket-title">Обращение № 1002</h1>
+        </div>
+        <div class="dates">
+          Дата создания: 18.03.2026<br>
+          Дата последнего изменения: 18.03.2026
+        </div>
+      </div>
+
+      <div class="form-block">
+        <div class="row">
+          <label>Тема:</label>
+          <input class="input" value="Переход с «1С:Управление производственным предприятием» («1С:УПП») на современные решения">
+        </div>
+
+        <div class="row">
+          <label>Срочность:</label>
+          <div class="priority-group">
+            <div class="priority" data-priority="low"><i class="fa-regular fa-clock"></i>Низкая</div>
+            <div class="priority" data-priority="medium"><i class="fa-regular fa-clock"></i>Средняя</div>
+            <div class="priority active" data-priority="high"><i class="fa-solid fa-bolt"></i>Высокая</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>Услуга:</label>
+          <div class="select-wrap">
+            <select class="select">
+              <option>Консультация по переходу на современные решения</option>
+              <option>Техническая поддержка</option>
+              <option>Обновление конфигурации</option>
+              <option>Интеграция</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+
+        <div class="row" style="align-items: flex-start;">
+          <label style="padding-top: 14px;">Содержание:</label>
+          <div style="position: relative; width: 100%;">
+            <textarea class="textarea">Нужна консультация: какие варианты сейчас актуальны для производственной компании, как обычно проходит переход (поэтапно или сразу), сколько это может занять по времени и бюджету, а также как происходит перенос данных из УПП.</textarea>
+            <i class="fa-solid fa-paperclip attach-icon" id="attachBtn"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="save-wrap">
+        <div class="file-list-inline" id="ticketFileList"></div>
+        <input type="file" id="ticketFileInput" style="display:none" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.xlsx,.xls,.doc,.docx,.zip,.txt,.csv">
+        <button class="save-btn" id="saveBtn">Сохранить обращение</button>
+        <button class="close-ticket-btn" id="closeTicketBtn" style="display:none">✓ Подтвердить выполнение</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEW MODAL -->
+  <div class="review-modal-bg" id="reviewModalBg">
+    <div class="review-modal">
+      <h3>Подтвердить выполнение</h3>
+      <p style="color:#857d78;margin-bottom:14px;font-size:14px">Оцените качество выполненной работы:</p>
+      <div class="star-row" id="starRow">
+        <span class="star" data-v="1">★</span>
+        <span class="star" data-v="2">★</span>
+        <span class="star" data-v="3">★</span>
+        <span class="star" data-v="4">★</span>
+        <span class="star" data-v="5">★</span>
+      </div>
+      <textarea id="reviewComment" rows="3" placeholder="Оставьте отзыв (необязательно)"></textarea>
+      <div class="review-modal-btns">
+        <button class="btn-submit-review" id="submitReviewBtn">Подтвердить</button>
+        <button class="btn-cancel-review" id="cancelReviewBtn">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN (desktop) -->
+  <aside class="chat-card">
+    <div class="chat-tabs">
+      <div class="tab active" data-tab="chat"><i class="fa-solid fa-comment-dots"></i>Чат</div>
+      <div class="tab" data-tab="history"><i class="fa-solid fa-clock-rotate-left"></i>История</div>
+      <div class="tab" data-tab="approval"><i class="fa-solid fa-circle-check"></i>Согласование</div>
+    </div>
+
+    <div class="tab-content active" id="chatContent">
+      <div class="chat-container">
+        <div class="chat-body">
+          <div class="message out">
+            Добрый день! Подскажите, пожалуйста, с чего лучше начать переход с 1С:УПП?
+            <div class="message-time">11:58</div>
+          </div>
+          <div class="message in">
+            <div class="message-name">Иван Дибров</div>
+            Здравствуйте!<br><br>Спасибо за обращение.<br>Уточните, пожалуйста, какие основные процессы у вас сейчас автоматизированы в УПП (производство, склад, зарплата и т.д.)?
+            <div class="message-time">11:58</div>
+          </div>
+          <div class="message out">
+            <div class="message-name">Александра Александрова</div>
+            У нас производство (позаказный учет, раскрой), склады, закупки, продажи, зарплата (сделка, премии), ЕГАИС, маркировка. Система сильно доработана.
+            <div class="message-time">11:58</div>
+          </div>
+        </div>
+        <div class="chat-input">
+          <i class="fa-solid fa-paperclip" id="desktopChatAttachBtn"></i>
+          <input type="text" placeholder="Напишите сообщение..." id="desktopChatMessageInput">
+          <i class="fa-solid fa-paper-plane" id="desktopSendMessageBtn"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="historyContent">
+      <div class="chat-body" id="historyList"></div>
+    </div>
+
+    <div class="tab-content" id="approvalContent">
+      <div class="chat-body" id="approvalContainer"></div>
+    </div>
+  </aside>
+</main>
+
+<script>
+  // ===== DATA HELPERS =====
+  var TPPO_KEYS = { tickets:'tppo_tickets', msgs:function(id){return 'tppo_msgs_'+id;}, user:'tppo_user' };
+  function getTickets(){ try{ return JSON.parse(localStorage.getItem(TPPO_KEYS.tickets)||'null')||[]; }catch(e){ return []; } }
+  function saveTickets(arr){ localStorage.setItem(TPPO_KEYS.tickets,JSON.stringify(arr)); }
+  function getMsgs(id){ try{ return JSON.parse(localStorage.getItem(TPPO_KEYS.msgs(id))||'null')||[]; }catch(e){ return []; } }
+  function saveMsgs(id,arr){ localStorage.setItem(TPPO_KEYS.msgs(id),JSON.stringify(arr)); }
+
+  function showToast(msg){ var t=document.getElementById('appToast'); if(!t){t=document.createElement('div');t.id='appToast';t.style.cssText='position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';document.body.appendChild(t);} t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2800); }
+  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function formatSize(b){ if(b<1024)return b+' Б'; if(b<1048576)return (b/1024).toFixed(1)+' КБ'; return (b/1048576).toFixed(1)+' МБ'; }
+  function nowDateStr(){ var d=new Date(); return d.getDate().toString().padStart(2,'0')+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear(); }
+  function nowTimeStr(){ var d=new Date(); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0'); }
+
+  // ===== URL PARAMS & TICKET LOADING =====
+  var urlParams = new URLSearchParams(window.location.search);
+  var ticketId = urlParams.get('id');
+  if(!ticketId){ window.location.href='МоиОбращения.html'; }
+
+  var currentTicket = null;
+  var tickets = getTickets();
+  for(var i=0;i<tickets.length;i++){ if(tickets[i].id===ticketId){ currentTicket=tickets[i]; break; } }
+  if(!currentTicket){ window.location.href='МоиОбращения.html'; }
+
+  function statusCssClass(s){
+    switch(s){
+      case 'done': return 'color:#2e7d32;background:#e8f4e6';
+      case 'progress': return 'color:#ef6c00;background:#fff3df';
+      case 'pending_eval': return 'color:#7b1fa2;background:#f3e5f5';
+      case 'on_approval': return 'color:#0d47a1;background:#e3f2fd';
+      case 'cancelled': return 'color:#616161;background:#f5f5f5';
+      default: return 'color:#1565c0;background:#e8f1ff';
+    }
+  }
+
+  function populateTicket(t){
+    var statusEl=document.querySelector('.ticket-header .status');
+    if(statusEl){ statusEl.textContent='Статус: '+t.statusLabel; statusEl.style.cssText='display:inline-block;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:700;'+statusCssClass(t.status); }
+    var titleEl=document.querySelector('.ticket-header .ticket-title');
+    if(titleEl) titleEl.textContent='Обращение № '+t.number;
+    var datesEl=document.querySelector('.dates');
+    if(datesEl) datesEl.innerHTML='Дата создания: '+t.createdAt+'<br>Дата последнего изменения: '+t.updatedAt;
+    var subjectInput=document.querySelector('.form-block .input');
+    if(subjectInput) subjectInput.value=t.subject;
+    var textarea=document.querySelector('.form-block .textarea');
+    if(textarea) textarea.value=t.description||'';
+    // Услуга
+    var sel=document.querySelector('.form-block .select');
+    if(sel && t.service){ for(var i=0;i<sel.options.length;i++){ if(sel.options[i].text.toLowerCase().indexOf(t.service.toLowerCase())!==-1){ sel.selectedIndex=i; break; } } }
+    // Приоритет
+    document.querySelectorAll('.priority').forEach(function(b){ b.classList.remove('active'); if(b.dataset.priority===t.urgency) b.classList.add('active'); });
+    // Кнопка подтверждения выполнения
+    var closeBtn = document.getElementById('closeTicketBtn');
+    if(closeBtn){
+      if(t.status==='done' && !t.review){ closeBtn.style.display='block'; }
+      else { closeBtn.style.display='none'; }
+    }
+    // Файлы
+    renderTicketFiles();
+  }
+  populateTicket(currentTicket);
+
+  // ===== HISTORY =====
+  function addHistoryEntry(field, oldVal, newVal){
+    if(!currentTicket.history) currentTicket.history=[];
+    currentTicket.history.push({date:nowDateStr(),time:nowTimeStr(),author:'Александрова А.А.',field:field,oldValue:oldVal||'',newValue:newVal||''});
+  }
+
+  function renderHistory(){
+    var list=document.getElementById('historyList');
+    if(!list) return;
+    var history=currentTicket.history||[];
+    if(history.length===0){ list.innerHTML='<div style="padding:20px;text-align:center;color:#999;font-size:14px">История изменений пуста</div>'; return; }
+    list.innerHTML='';
+    history.forEach(function(e){
+      var div=document.createElement('div');
+      div.className='history-item';
+      var txt=escapeHtml(e.date)+' '+escapeHtml(e.time)+'<br><strong>'+escapeHtml(e.author)+'</strong><br>';
+      if(e.field==='status'){
+        txt+='<div class="history-status">Статус: '+(e.oldValue?escapeHtml(e.oldValue)+' → ':'')+escapeHtml(e.newValue)+'</div>';
+      } else {
+        txt+=escapeHtml(e.field)+': '+(e.oldValue?escapeHtml(e.oldValue)+' → ':'')+escapeHtml(e.newValue);
+      }
+      div.innerHTML=txt;
+      list.appendChild(div);
+    });
+    list.scrollTop=list.scrollHeight;
+  }
+  renderHistory();
+
+  // ===== APPROVAL =====
+  function renderApproval(){
+    var container=document.getElementById('approvalContainer');
+    if(!container) return;
+    var ap=currentTicket.approval;
+    if(!ap){ container.innerHTML='<div style="padding:20px;text-align:center;color:#999;font-size:14px">Коммерческое предложение не выставлено</div>'; return; }
+    container.innerHTML='';
+    var fields=[
+      ['Договор', ap.contract||'—'],
+      ['Ставка', ap.rate ? ap.rate.toLocaleString('ru-RU')+' р./час' : '—'],
+      ['Планируемые часы', ap.hours ? ap.hours+' ч.' : '—'],
+      ['Размер скидки', ap.discount ? ap.discount+'%' : '0%'],
+      ['Сумма оплаты', ap.cost ? ap.cost.toLocaleString('ru-RU')+' р.' : '—'],
+      ['Плановая дата', ap.deadline||'—'],
+      ['Дата передачи', ap.proposedAt||'—'],
+      ['Ожидаемый эффект', ap.effect||'—']
+    ];
+    fields.forEach(function(f){
+      var d=document.createElement('div'); d.className='approval-item';
+      d.innerHTML='<div class="approval-label">'+escapeHtml(f[0])+'</div><div class="approval-value">'+escapeHtml(f[1])+'</div>';
+      container.appendChild(d);
+    });
+    if(ap.status==='approved'){
+      var badge=document.createElement('div'); badge.style.cssText='padding:12px 14px';
+      badge.innerHTML='<span style="background:#e8f4e6;color:#2e7d32;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700">✓ Согласовано</span>';
+      container.appendChild(badge);
+    } else if(ap.status==='rejected'){
+      var badge=document.createElement('div'); badge.style.cssText='padding:12px 14px';
+      badge.innerHTML='<span style="background:#fde8e8;color:#c62828;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700">✗ Отклонено клиентом</span>';
+      container.appendChild(badge);
+    } else {
+      var btns=document.createElement('div'); btns.className='approval-actions';
+      btns.innerHTML='<button class="btn-approve" id="approveBtn">✓ Согласовать</button><button class="btn-reject" id="rejectBtn">✗ Отклонить</button>';
+      container.appendChild(btns);
+      document.getElementById('approveBtn').addEventListener('click',function(){
+        currentTicket.approval.status='approved';
+        addHistoryEntry('status','На согласовании','Согласовано клиентом');
+        saveCurrentTicket();
+        renderApproval(); renderHistory(); populateTicket(currentTicket);
+        showToast('Предложение согласовано');
+      });
+      document.getElementById('rejectBtn').addEventListener('click',function(){
+        currentTicket.approval.status='rejected';
+        addHistoryEntry('status','На согласовании','Отклонено клиентом');
+        saveCurrentTicket();
+        renderApproval(); renderHistory(); populateTicket(currentTicket);
+        showToast('Предложение отклонено');
+      });
+    }
+  }
+  renderApproval();
+
+  // ===== SAVE & HELPERS =====
+  function saveCurrentTicket(){
+    currentTicket.updatedAt=nowDateStr();
+    var all=getTickets();
+    var idx=all.findIndex(function(t){return t.id===ticketId;});
+    if(idx>=0){all[idx]=currentTicket;} else {all.push(currentTicket);}
+    saveTickets(all);
+  }
+
+  // ===== FILE UPLOAD (ticket form) =====
+  var ticketFiles = currentTicket.files ? currentTicket.files.slice() : [];
+
+  function renderTicketFiles(){
+    var list=document.getElementById('ticketFileList');
+    if(!list) return;
+    if(ticketFiles.length===0){list.innerHTML='';return;}
+    list.innerHTML=ticketFiles.map(function(f,i){
+      return '<div class="file-tag"><i class="fa-solid fa-paperclip" style="color:#ff8244"></i><span>'+escapeHtml(f.name)+'</span><span style="color:#aaa;font-size:12px">('+formatSize(f.size)+')</span><span class="rm" data-ri="'+i+'"><i class="fa-solid fa-xmark"></i></span></div>';
+    }).join('');
+    list.querySelectorAll('.rm').forEach(function(btn){
+      btn.addEventListener('click',function(){ ticketFiles.splice(parseInt(btn.dataset.ri),1); renderTicketFiles(); });
+    });
+  }
+
+  var ticketFileInput=document.getElementById('ticketFileInput');
+  document.getElementById('attachBtn')?.addEventListener('click',function(e){ e.preventDefault(); ticketFileInput?.click(); });
+  ticketFileInput?.addEventListener('change',function(){
+    Array.from(ticketFileInput.files).forEach(function(f){
+      if(f.size>10*1024*1024){showToast('Файл '+f.name+' превышает 10 МБ');return;}
+      ticketFiles.push({name:f.name,size:f.size,type:f.type});
+      showToast('Файл прикреплён: '+f.name);
+    });
+    ticketFileInput.value='';
+    renderTicketFiles();
+  });
+
+  // ===== CHAT RENDERING =====
+  function renderMsg(msg){
+    var d=document.createElement('div');
+    d.className='message '+(msg.author==='client'?'out':'in');
+    var isFirst = msg.isFirst ? ' style="font-style:italic;border-left:3px solid rgba(255,130,68,0.4);padding-left:10px"' : '';
+    d.innerHTML='<div'+isFirst+'>'+escapeHtml(msg.text)+'</div><div class="message-time">'+msg.time+'</div>';
+    return d;
+  }
+
+  function loadMessages(){
+    var msgs=getMsgs(ticketId);
+    // Авто первое сообщение = описание обращения
+    if(msgs.length===0 && currentTicket.description){
+      var autoMsg={id:'msg_auto_1',author:'client',name:'Александрова А.А.',text:currentTicket.description,time:'09:00',date:currentTicket.createdAt,isFirst:true};
+      msgs=[autoMsg];
+      saveMsgs(ticketId,msgs);
+    }
+    var desktopBody=document.querySelector('#chatContent .chat-body');
+    var mobileBody=document.querySelector('#mobileChatItem .chat-body');
+    if(desktopBody){desktopBody.innerHTML='';msgs.forEach(function(m){desktopBody.appendChild(renderMsg(m));});desktopBody.scrollTop=desktopBody.scrollHeight;}
+    if(mobileBody){mobileBody.innerHTML='';msgs.forEach(function(m){mobileBody.appendChild(renderMsg(m));});mobileBody.scrollTop=mobileBody.scrollHeight;}
+  }
+  loadMessages();
+
+  // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (desktop) =====
+  const tabs = document.querySelectorAll('.chat-card .tab');
+  const tabContents = document.querySelectorAll('.chat-card .tab-content');
+  function switchTab(activeTab) {
+    tabContents.forEach(content => content.classList.remove('active'));
+    tabs.forEach(tab => tab.classList.remove('active'));
+    activeTab.classList.add('active');
+    const tabName = activeTab.getAttribute('data-tab');
+    const targetContent = document.getElementById(`${tabName}Content`);
+    if (targetContent) targetContent.classList.add('active');
+  }
+  tabs.forEach(tab => { tab.addEventListener('click', () => switchTab(tab)); });
+
+  // === ПЕРЕКЛЮЧЕНИЕ МОБИЛЬНЫХ ВКЛАДОК ===
+  const mobileTabs = document.querySelectorAll('.mobile-tab');
+  const mobileItems = document.querySelectorAll('.mobile-content-item');
+  function switchMobileTab(activeTab) {
+    mobileTabs.forEach(t => t.classList.remove('active'));
+    mobileItems.forEach(item => item.classList.remove('active'));
+    activeTab.classList.add('active');
+    const tabName = activeTab.getAttribute('data-mobile-tab');
+    document.getElementById(`mobile${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Item`).classList.add('active');
+  }
+  mobileTabs.forEach(tab => { tab.addEventListener('click', () => switchMobileTab(tab)); });
+
+  // === ОТКРЫТИЕ/ЗАКРЫТИЕ МОБИЛЬНОЙ ПАНЕЛИ ===
+  const mobileToggle = document.getElementById('mobileChatToggle');
+  const mobilePanel = document.getElementById('mobileChatPanel');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  const mobileClose = document.getElementById('mobileChatClose');
+  function openMobilePanel() { mobilePanel.classList.add('open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeMobilePanel() { mobilePanel.classList.remove('open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+  mobileToggle.addEventListener('click', openMobilePanel);
+  mobileClose.addEventListener('click', closeMobilePanel);
+  mobileOverlay.addEventListener('click', closeMobilePanel);
+
+  // === ПЕРЕКЛЮЧЕНИЕ ПРИОРИТЕТА ===
+  const priorityBtns = document.querySelectorAll('.priority');
+  priorityBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      priorityBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // === КНОПКИ НАВИГАЦИИ ===
+  document.getElementById('backBtn').addEventListener('click', () => window.location.href='МоиОбращения.html');
+  document.getElementById('logoBtn')?.addEventListener('click', () => window.location.href='Дашборд.html');
+  document.getElementById('profileIcon')?.addEventListener('click', () => window.location.href='Настройки.html');
+  document.getElementById('profileName')?.addEventListener('click', () => window.location.href='Настройки.html');
+  document.getElementById('logoutBtn')?.addEventListener('click', () => window.location.href='ФормаВхода.html');
+
+  // === СОХРАНИТЬ ОБРАЩЕНИЕ ===
+  document.getElementById('saveBtn')?.addEventListener('click', function(){
+    var subjectInput=document.querySelector('.form-block .input');
+    var textarea=document.querySelector('.form-block .textarea');
+    var sel=document.querySelector('.form-block .select');
+    var activePriority=document.querySelector('.priority.active');
+    var oldSubject=currentTicket.subject, oldDesc=currentTicket.description, oldUrgency=currentTicket.urgency;
+    if(subjectInput){ var ns=subjectInput.value.trim()||currentTicket.subject; if(ns!==oldSubject){addHistoryEntry('Тема',oldSubject,ns);} currentTicket.subject=ns; }
+    if(textarea){ var nd=textarea.value.trim(); if(nd!==oldDesc){addHistoryEntry('Описание','(изменено)','');} currentTicket.description=nd; }
+    if(sel){ currentTicket.service=sel.options[sel.selectedIndex]?.text||currentTicket.service; }
+    if(activePriority){ var nu=activePriority.dataset.priority; if(nu!==oldUrgency){addHistoryEntry('Срочность',oldUrgency,nu);} currentTicket.urgency=nu; }
+    currentTicket.files=ticketFiles.slice();
+    saveCurrentTicket();
+    renderHistory();
+    showToast('Изменения сохранены');
+  });
+
+  // === ЗАКРЫТИЕ + ОТЗЫВ ===
+  var reviewRating = 0;
+  document.getElementById('closeTicketBtn')?.addEventListener('click', function(){
+    reviewRating=0;
+    document.querySelectorAll('#starRow .star').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById('reviewComment').value='';
+    document.getElementById('reviewModalBg').classList.add('open');
+  });
+  document.querySelectorAll('#starRow .star').forEach(function(star){
+    star.addEventListener('click',function(){
+      reviewRating=parseInt(star.dataset.v);
+      document.querySelectorAll('#starRow .star').forEach(function(s){ s.classList.toggle('active',parseInt(s.dataset.v)<=reviewRating); });
+    });
+  });
+  document.getElementById('submitReviewBtn')?.addEventListener('click',function(){
+    if(reviewRating===0){showToast('Поставьте оценку');return;}
+    currentTicket.review={rating:reviewRating,comment:document.getElementById('reviewComment').value.trim(),closedAt:nowDateStr()};
+    addHistoryEntry('status','Выполнено','Выполнение подтверждено клиентом');
+    saveCurrentTicket();
+    document.getElementById('reviewModalBg').classList.remove('open');
+    document.getElementById('closeTicketBtn').style.display='none';
+    renderHistory();
+    showToast('Спасибо за отзыв! Обращение закрыто.');
+  });
+  document.getElementById('cancelReviewBtn')?.addEventListener('click',function(){
+    document.getElementById('reviewModalBg').classList.remove('open');
+  });
+
+  // === ДЕСКТОП ЧАТ ===
+  const desktopSendBtn = document.getElementById('desktopSendMessageBtn');
+  const desktopChatInput = document.getElementById('desktopChatMessageInput');
+  const desktopChatBody = document.querySelector('#chatContent .chat-body');
+
+  function sendMessage(text){
+    if(!text) return;
+    var msgs=getMsgs(ticketId);
+    var d=new Date(); var time=d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+    var dateStr=nowDateStr();
+    var msg={id:'msg_'+Date.now(),author:'client',name:'Клиент',text:text,time:time,date:dateStr};
+    msgs.push(msg); saveMsgs(ticketId,msgs);
+    var el=renderMsg(msg);
+    if(desktopChatBody){desktopChatBody.appendChild(el);desktopChatBody.scrollTop=desktopChatBody.scrollHeight;}
+    var mobileBody=document.querySelector('#mobileChatItem .chat-body');
+    if(mobileBody){mobileBody.appendChild(renderMsg(msg));mobileBody.scrollTop=mobileBody.scrollHeight;}
+  }
+
+  function sendDesktopMessage() {
+    const text = desktopChatInput.value.trim();
+    if (text) { sendMessage(text); desktopChatInput.value = ''; }
+    else { showToast('Введите текст сообщения'); }
+  }
+  desktopSendBtn?.addEventListener('click', sendDesktopMessage);
+  desktopChatInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendDesktopMessage(); } });
+
+  // === МОБИЛЬНЫЙ ЧАТ ===
+  const mobileSendBtn = document.getElementById('mobileSendMessageBtn');
+  const mobileChatInput = document.getElementById('mobileChatMessageInput');
+
+  function sendMobileMessage() {
+    const text = mobileChatInput.value.trim();
+    if (text) { sendMessage(text); mobileChatInput.value = ''; }
+    else { showToast('Введите текст сообщения'); }
+  }
+  mobileSendBtn?.addEventListener('click', sendMobileMessage);
+  mobileChatInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMobileMessage(); } });
+
+  // === ВЛОЖЕНИЯ В ЧАТ ===
+  document.getElementById('desktopChatAttachBtn')?.addEventListener('click', () => showToast('Прикрепление файлов к сообщению будет в следующей версии'));
+  document.getElementById('mobileChatAttachBtn')?.addEventListener('click', () => showToast('Прикрепление файлов к сообщению будет в следующей версии'));
+</script>
+</body>
+</html>
