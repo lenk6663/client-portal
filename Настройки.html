@@ -290,6 +290,12 @@
       box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
     }
 
+    .save-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     /* Десктопный профиль */
     .profile {
       position: fixed;
@@ -721,7 +727,7 @@
 </head>
 <body>
 
-<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="overlay" id="overlay"></div>
 
 <div class="sidebar" id="sidebar">
   <div class="logo-image" id="logoDashboardBtn">
@@ -763,7 +769,7 @@
 
 <main class="main">
   <div class="mobile-topbar">
-    <button class="burger" id="burgerBtn" onclick="toggleSidebar()">
+    <button class="burger" id="burgerBtn">
       <span></span><span></span><span></span>
     </button>
     
@@ -774,7 +780,7 @@
             <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
           </svg>
         </div>
-        <span class="mobile-user-name">Александра</span>
+        <span class="mobile-user-name" id="mobileUserName">...</span>
       </div>
       <div class="mobile-logout-wrapper" id="mobileLogoutBtn">
         <div class="mobile-logout-icon">
@@ -794,7 +800,7 @@
           <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
         </svg>
       </div>
-      <span>Александра</span>
+      <span id="desktopUserName">...</span>
     </div>
     <div class="logout-btn" id="desktopLogoutBtn">
       <div class="logout-icon">
@@ -818,22 +824,20 @@
         </div>
 
         <div class="profile-data">
-          <div class="fullname">
-            Александрова Александра Александровна
-          </div>
+          <div class="fullname" id="fullName">...</div>
 
           <div class="input-wrap">
-            <input type="text" placeholder="Телефон: +7 999 123-45-67" id="phoneInput">
+            <input type="text" placeholder="Телефон" id="phoneInput">
             <i class="fa-regular fa-eye-slash eye" onclick="toggleField('phoneInput', this)"></i>
           </div>
 
           <div class="input-wrap">
-            <input type="email" placeholder="E-mail: example@example.com" id="emailInput">
+            <input type="email" placeholder="E-mail" id="emailInput">
             <i class="fa-regular fa-eye-slash eye" onclick="toggleField('emailInput', this)"></i>
           </div>
 
           <div class="input-wrap">
-            <input type="password" placeholder="Пароль: ************" id="passInput">
+            <input type="password" placeholder="Новый пароль (оставьте пустым, чтобы не менять)" id="passInput">
             <i class="fa-regular fa-eye eye" onclick="togglePassword('passInput', this)"></i>
           </div>
         </div>
@@ -847,35 +851,35 @@
         <div>Push</div>
       </div>
 
-      <div class="notify-table">
+      <div class="notify-table" id="notifyTable">
         <div class="notify-row">
           <div>Новое сообщение</div>
-          <div class="check"><input checked type="checkbox"></div>
-          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input type="checkbox" id="email_newMessage" checked></div>
+          <div class="check"><input type="checkbox" id="push_newMessage" checked></div>
         </div>
 
         <div class="notify-row">
           <div>Новый статус обращения</div>
-          <div class="check"><input checked type="checkbox"></div>
-          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input type="checkbox" id="email_statusChange" checked></div>
+          <div class="check"><input type="checkbox" id="push_statusChange" checked></div>
         </div>
 
         <div class="notify-row">
           <div>Комментарий к обращению</div>
-          <div class="check"><input checked type="checkbox"></div>
-          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input type="checkbox" id="email_newOffer" checked></div>
+          <div class="check"><input type="checkbox" id="push_newOffer" checked></div>
         </div>
 
         <div class="notify-row">
           <div>Назначение ответственного</div>
-          <div class="check"><input checked type="checkbox"></div>
-          <div class="check"><input checked type="checkbox"></div>
+          <div class="check"><input type="checkbox" id="email_responsible" checked></div>
+          <div class="check"><input type="checkbox" id="push_responsible" checked></div>
         </div>
 
         <div class="notify-row">
           <div>Ответ от службы поддержки</div>
-          <div class="check"><input checked type="checkbox"></div>
-          <div class="check"><input type="checkbox"></div>
+          <div class="check"><input type="checkbox" id="email_supportReply" checked></div>
+          <div class="check"><input type="checkbox" id="push_supportReply"></div>
         </div>
       </div>
     </div>
@@ -884,85 +888,346 @@
   </div>
 </main>
 
+<script src="api.js"></script>
 <script>
-  var TPPO_KEYS = { tickets:'tppo_tickets', msgs:function(id){return 'tppo_msgs_'+id;}, user:'tppo_user', settings:'tppo_settings' };
-  function showToast(msg){ var t=document.getElementById('appToast'); if(!t){t=document.createElement('div');t.id='appToast';t.style.cssText='position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';document.body.appendChild(t);} t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2800); }
+  // ============================================================
+  // НАСТРОЙКИ — ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ
+  // Загружает данные текущего пользователя с сервера
+  // ============================================================
 
-  function toggleField(inputId, eyeIcon) {
-    const input = document.getElementById(inputId);
-    if (input.type === 'text') { input.type = 'password'; eyeIcon.classList.remove('fa-eye-slash'); eyeIcon.classList.add('fa-eye'); }
-    else if (input.type === 'password') { input.type = 'text'; eyeIcon.classList.remove('fa-eye'); eyeIcon.classList.add('fa-eye-slash'); }
+  function showToast(msg, isError) {
+    var toast = document.getElementById('appToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'appToast';
+      toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';
+      document.body.appendChild(toast);
+    }
+    toast.style.background = isError ? 'rgba(180,30,30,0.92)' : 'rgba(20,20,20,0.88)';
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function() {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 3000);
   }
 
-  function togglePassword(inputId, eyeIcon) {
+  // Функции для глазков
+  window.toggleField = function(inputId, eyeIcon) {
     const input = document.getElementById(inputId);
-    if (input.type === 'password') { input.type = 'text'; eyeIcon.classList.remove('fa-eye'); eyeIcon.classList.add('fa-eye-slash'); }
-    else { input.type = 'password'; eyeIcon.classList.remove('fa-eye-slash'); eyeIcon.classList.add('fa-eye'); }
-  }
+    if (!input) return;
+    if (input.type === 'text') {
+      input.type = 'password';
+      eyeIcon.classList.remove('fa-eye-slash');
+      eyeIcon.classList.add('fa-eye');
+    } else if (input.type === 'password') {
+      input.type = 'text';
+      eyeIcon.classList.remove('fa-eye');
+      eyeIcon.classList.add('fa-eye-slash');
+    }
+  };
 
-  // ---- Load profile
-  function loadProfile(){
-    var u; try{ u=JSON.parse(localStorage.getItem(TPPO_KEYS.user)||'null'); }catch(e){}
-    if(u){
-      var ph=document.getElementById('phoneInput'); if(ph) ph.value=u.phone||'';
-      var em=document.getElementById('emailInput'); if(em) em.value=u.email||'';
+  window.togglePassword = function(inputId, eyeIcon) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      eyeIcon.classList.remove('fa-eye');
+      eyeIcon.classList.add('fa-eye-slash');
+    } else {
+      input.type = 'password';
+      eyeIcon.classList.remove('fa-eye-slash');
+      eyeIcon.classList.add('fa-eye');
+    }
+  };
+
+  // ===== ЗАГРУЗКА ПРОФИЛЯ С СЕРВЕРА =====
+  async function loadProfile() {
+    try {
+      const profile = await TPPO.getProfile();
+      const user = TPPO.Auth.getUser();
+      
+      if (!user) {
+        console.warn('Пользователь не найден');
+        return;
+      }
+      
+      // Обновляем имя в десктопном профиле
+      const desktopUserName = document.getElementById('desktopUserName');
+      if (desktopUserName) {
+        desktopUserName.textContent = TPPO.Auth.getDisplayName();
+      }
+      
+      // Обновляем имя в мобильной шапке
+      const mobileUserName = document.getElementById('mobileUserName');
+      if (mobileUserName) {
+        mobileUserName.textContent = TPPO.Auth.getDisplayName();
+      }
+      
+      // Полное имя в карточке
+      const fullNameEl = document.getElementById('fullName');
+      if (fullNameEl && user.name) {
+        fullNameEl.textContent = user.name;
+      }
+      
+      // Телефон
+      const phoneInput = document.getElementById('phoneInput');
+      if (phoneInput && user.phone) {
+        phoneInput.value = user.phone;
+        phoneInput.placeholder = user.phone;
+      }
+      
+      // Email
+      const emailInput = document.getElementById('emailInput');
+      if (emailInput && user.email) {
+        emailInput.value = user.email;
+        emailInput.placeholder = user.email;
+      } else if (emailInput) {
+        emailInput.placeholder = 'не указан';
+      }
+      
+      // Пароль — оставляем пустым (не хранится в открытом виде)
+      const passInput = document.getElementById('passInput');
+      if (passInput) {
+        passInput.value = '';
+        passInput.placeholder = 'Новый пароль (оставьте пустым, чтобы не менять)';
+      }
+      
+      console.log('Загружен профиль:', user.name, user.phone);
+    } catch (e) {
+      console.error('Ошибка загрузки профиля:', e);
+      showToast('Не удалось загрузить данные пользователя', true);
     }
   }
-  loadProfile();
 
-  // ---- Load notification settings
-  function loadNotifSettings(){
-    var s; try{ s=JSON.parse(localStorage.getItem(TPPO_KEYS.settings)||'null'); }catch(e){}
-    if(!s) return;
-    var checkboxes=document.querySelectorAll('.notif-table input[type="checkbox"]');
-    // Match by row/col order if no IDs: flatten by row then email/push
-    // Try by id if assigned, otherwise skip
-    if(s.email){
-      var rows=['newMessage','statusChange','newOffer','responsible'];
-      rows.forEach(function(key){
-        var el=document.getElementById('email_'+key); if(el) el.checked=!!s.email[key];
-        var el2=document.getElementById('push_'+key); if(el2) el2.checked=!!(s.push&&s.push[key]);
+  // ===== ЗАГРУЗКА НАСТРОЕК УВЕДОМЛЕНИЙ =====
+  async function loadNotificationSettings() {
+    try {
+      const settings = await TPPO.getNotifSettings();
+      if (!settings) return;
+      
+      // Обновляем чекбоксы
+      const eventTypes = ['newMessage', 'statusChange', 'newOffer', 'responsible', 'supportReply'];
+      
+      eventTypes.forEach(function(type) {
+        const emailCheckbox = document.getElementById(`email_${type}`);
+        const pushCheckbox = document.getElementById(`push_${type}`);
+        
+        if (emailCheckbox && settings.email) {
+          emailCheckbox.checked = settings.email[type] === true;
+        }
+        if (pushCheckbox && settings.push) {
+          pushCheckbox.checked = settings.push[type] === true;
+        }
       });
+      
+      console.log('Загружены настройки уведомлений');
+    } catch (e) {
+      console.warn('Не удалось загрузить настройки уведомлений:', e);
+      // Не показываем тост, так как это не критично
     }
   }
-  loadNotifSettings();
 
-  // ---- Save settings
-  function saveSettings() {
-    var phone = document.getElementById('phoneInput')?.value || '';
-    var email = document.getElementById('emailInput')?.value || '';
-    var u; try{ u=JSON.parse(localStorage.getItem(TPPO_KEYS.user)||'null'); }catch(e){} if(!u) u={};
-    u.phone=phone; u.email=email;
-    localStorage.setItem(TPPO_KEYS.user,JSON.stringify(u));
-    showToast('Настройки сохранены');
+  // ===== СОХРАНЕНИЕ ВСЕХ НАСТРОЕК =====
+  async function saveAllSettings() {
+    const phoneInput = document.getElementById('phoneInput');
+    const emailInput = document.getElementById('emailInput');
+    const passInput = document.getElementById('passInput');
+    const currentUser = TPPO.Auth.getUser();
+    
+    // Собираем обновления профиля
+    const profileUpdates = {};
+    
+    if (phoneInput && phoneInput.value.trim() !== (currentUser?.phone || '')) {
+      profileUpdates.phone = phoneInput.value.trim();
+    }
+    
+    if (emailInput && emailInput.value.trim() !== (currentUser?.email || '')) {
+      profileUpdates.email = emailInput.value.trim();
+    }
+    
+    if (passInput && passInput.value.trim()) {
+      profileUpdates.password = passInput.value.trim();
+    }
+    
+    // Собираем настройки уведомлений
+    const notifSettings = {
+      email: {},
+      push: {}
+    };
+    
+    const eventTypes = ['newMessage', 'statusChange', 'newOffer', 'responsible', 'supportReply'];
+    
+    eventTypes.forEach(function(type) {
+      const emailCheckbox = document.getElementById(`email_${type}`);
+      const pushCheckbox = document.getElementById(`push_${type}`);
+      
+      if (emailCheckbox) notifSettings.email[type] = emailCheckbox.checked;
+      if (pushCheckbox) notifSettings.push[type] = pushCheckbox.checked;
+    });
+    
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Сохраняется...';
+    }
+    
+    try {
+      // Сохраняем профиль, если есть изменения
+      if (Object.keys(profileUpdates).length > 0) {
+        await TPPO.updateProfile(profileUpdates);
+        showToast('Данные профиля обновлены');
+      }
+      
+      // Сохраняем настройки уведомлений
+      await TPPO.updateNotifSettings(notifSettings);
+      
+      showToast('Настройки сохранены');
+      
+      // Перезагружаем отображение
+      await loadProfile();
+      
+      // Очищаем поле пароля
+      if (passInput) passInput.value = '';
+      
+    } catch (e) {
+      console.error('Ошибка сохранения:', e);
+      showToast('Ошибка: ' + (e.message || 'не удалось сохранить настройки'), true);
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Сохранить изменения';
+      }
+    }
   }
 
-  // ---- Sidebar
+  // ===== ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ =====
+  (async function initSettingsPage() {
+    // Загружаем профиль с сервера
+    await loadProfile();
+    
+    // Загружаем настройки уведомлений
+    await loadNotificationSettings();
+    
+    // Навешиваем обработчик на кнопку сохранения
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+      // Удаляем старые обработчики
+      const newSaveBtn = saveBtn.cloneNode(true);
+      saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+      newSaveBtn.addEventListener('click', saveAllSettings);
+    }
+  })();
+
+  // ===== САЙДБАР И НАВИГАЦИЯ =====
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
 
-  function openSidebar() { if (window.innerWidth <= 768) { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; } }
-  function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
-  window.toggleSidebar = function() { sidebar.classList.contains('active')?closeSidebar():openSidebar(); };
+  function openSidebar() {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('active');
+      if (overlay) overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+  
+  function closeSidebar() {
+    sidebar.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  
+  window.toggleSidebar = function() {
+    sidebar.classList.contains('active') ? closeSidebar() : openSidebar();
+  };
+  
   if (overlay) overlay.addEventListener('click', closeSidebar);
+  
+  // Свайп для мобильных
   let touchStartX = 0;
   document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].clientX; });
-  document.addEventListener('touchend', (e) => { const dx = e.changedTouches[0].clientX - touchStartX; if (window.innerWidth <= 768) { if (dx > 70 && !sidebar.classList.contains('active')) openSidebar(); if (dx < -70 && sidebar.classList.contains('active')) closeSidebar(); } });
-  window.addEventListener('resize', () => { if (window.innerWidth > 768 && sidebar.classList.contains('active')) { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; } });
-
-  var routeMap = {'dashboard':'Дашборд.html','my-tickets':'МоиОбращения.html','call-order':'ОбратныйЗвонок.html','settings':'Настройки.html'};
-  document.querySelectorAll('[data-route]').forEach(function(item){ item.addEventListener('click',function(e){ e.stopPropagation(); var r=item.dataset.route; if(routeMap[r]&&r!=='settings') window.location.href=routeMap[r]; if(window.innerWidth<=768) setTimeout(closeSidebar,80); }); });
-
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (window.innerWidth <= 768) {
+      if (dx > 70 && !sidebar.classList.contains('active')) openSidebar();
+      if (dx < -70 && sidebar.classList.contains('active')) closeSidebar();
+    }
+  });
+  
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
+      sidebar.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+  
+  // Навигация по меню
+  const burgerBtn = document.getElementById('burgerBtn');
+  if (burgerBtn) {
+    burgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.toggleSidebar();
+    });
+  }
+  
+  const routeMap = {
+    'dashboard': 'Дашборд.html',
+    'my-tickets': 'МоиОбращения.html',
+    'call-order': 'ОбратныйЗвонок.html',
+    'settings': 'Настройки.html'
+  };
+  
+  document.querySelectorAll('[data-route]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const route = item.dataset.route;
+      if (routeMap[route] && route !== 'settings') {
+        window.location.href = routeMap[route];
+      }
+      if (window.innerWidth <= 768) setTimeout(closeSidebar, 80);
+    });
+  });
+  
   const logoButton = document.getElementById('logoDashboardBtn');
-  if (logoButton) logoButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href='Дашборд.html'; });
-
-  document.getElementById('desktopProfileInfo')?.addEventListener('click', () => window.location.href='Настройки.html');
-  document.getElementById('mobileProfileClickable')?.addEventListener('click', () => window.location.href='Настройки.html');
-  document.getElementById('desktopLogoutBtn')?.addEventListener('click', () => window.location.href='ФормаВхода.html');
-  document.getElementById('mobileLogoutBtn')?.addEventListener('click', () => window.location.href='ФормаВхода.html');
-
-  const saveButton = document.getElementById('saveSettingsBtn');
-  if (saveButton) saveButton.addEventListener('click', () => saveSettings());
+  if (logoButton) {
+    logoButton.addEventListener('click', () => {
+      window.location.href = 'Дашборд.html';
+    });
+  }
+  
+  // Переходы по клику на профиль и выход
+  const desktopProfileInfo = document.getElementById('desktopProfileInfo');
+  if (desktopProfileInfo) {
+    desktopProfileInfo.addEventListener('click', () => {
+      window.location.href = 'Настройки.html';
+    });
+  }
+  
+  const mobileProfileClickable = document.getElementById('mobileProfileClickable');
+  if (mobileProfileClickable) {
+    mobileProfileClickable.addEventListener('click', () => {
+      window.location.href = 'Настройки.html';
+    });
+  }
+  
+  const desktopLogoutBtn = document.getElementById('desktopLogoutBtn');
+  if (desktopLogoutBtn) {
+    desktopLogoutBtn.addEventListener('click', async () => {
+      await TPPO.logout();
+      window.location.href = 'ФормаВхода.html';
+    });
+  }
+  
+  const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+  if (mobileLogoutBtn) {
+    mobileLogoutBtn.addEventListener('click', async () => {
+      await TPPO.logout();
+      window.location.href = 'ФормаВхода.html';
+    });
+  }
 </script>
 </body>
 </html>
