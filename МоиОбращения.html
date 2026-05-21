@@ -120,15 +120,12 @@
       transition: margin 0.3s ease;
     }
 
-    /* Десктопный блок профиля (как в дашборде) */
-    .profile {
-      position: fixed;
-      top: 36px;
-      right: 56px;
+    /* Десктопный блок сверху*/
+    .top-actions {
+      max-width: 100%;
       display: flex;
       align-items: center;
       gap: 12px;
-      z-index: 100;
     }
 
     .profile-info {
@@ -342,47 +339,60 @@
       margin-bottom: 16px;
     }
 
-    /* Поисковая строка */
-    .search-row {
-      margin-bottom: 20px;
-     }
-    
-    .search {
-      width: 100%;;
-      height: 46px;
-      border: 2px solid #b9b0a9;
-      border-radius: 14px;
-      background: #f3efeb;
+  /* Поисковая строка */
+  .search-row {
+    margin-bottom: 20px;
+    width: 100%;
+  }
+ /* МОбильная оисковая строка */
+  .mobile-search-row {
+    margin: 0px 2%;
+    width: 95%;
+    display: none;
+  }
+
+  .search {
+    width: 100%;
+    height: 46px;
+    border: 2px solid #b9b0a9;
+    border-radius: 14px;
+    background: #f3efeb;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  .search i {
+    color: #8c857f;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  .search input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: #222;
+  }
+
+  .search input::placeholder {
+    color: #9f9892;
+  }
+
+  /* Адаптивность для поиска */
+  @media (max-width: 768px) {
+    .mobile-search-row {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 16px;
     }
-
-    .search i {
-      color: #8c857f;
-      font-size: 18px;
-      font-style: normal;
-      font-weight: 400;
-    }
-
-    .search input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      outline: none;
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      color: #222;
-    }
-
-    .search input::placeholder {
-      color: #9f9892;
-    }
-
+  }
     /* Блок фильтров */
     .filters-section {
-      margin-bottom: 24px;
+      margin-bottom: 10px;
     }
 
     .filters-label {
@@ -438,7 +448,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
       flex-wrap: wrap;
     }
 
@@ -451,7 +461,7 @@
     .sub-info {
       color: #a0958d;
       font-size: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       font-weight: 500;
     }
 
@@ -461,6 +471,7 @@
       overflow-y: auto;
       max-height: 55vh;
       border-radius: 20px;
+      max-height: 45vh;
     }
 
     table {
@@ -555,36 +566,6 @@
       font-size: 13px;
     }
 
-    /* Кнопка создания обращения */
-    .create-btn-bottom {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    .create-btn-wide {
-      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
-      border: none;
-      border-radius: 16px;
-      padding: 14px 36px;
-      font-size: 18px;
-      font-weight: 700;
-      color: white;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-      transition: transform 0.15s, box-shadow 0.15s;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .create-btn-wide:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
-    }
-
     /* Секция обратных звонков */
     .callback-section {
       margin-top: 8px;
@@ -606,6 +587,14 @@
       height: 2px;
       background: rgba(0, 0, 0, 0.1);
       border-radius: 2px;
+    }
+
+    /* Отступ снизу для контента, чтобы не перекрывался кнопкой */
+    .content-wrapper {
+      margin-left: 250px;
+      padding: 28px 42px 100px 42px;  /* увеличил нижний отступ */
+      width: calc(100% - 250px);
+      transition: margin 0.3s ease;
     }
 
     /* Адаптивность */
@@ -630,7 +619,7 @@
         padding: 16px;
       }
 
-      .profile {
+      .top-actions {
         display: none;
       }
 
@@ -653,10 +642,6 @@
         font-size: 20px;
       }
 
-      .table-wrap {
-        max-height: 50vh;
-      }
-
       th, td {
         padding: 10px 8px;
         font-size: 13px;
@@ -668,13 +653,6 @@
         font-size: 13px;
       }
 
-      .create-btn-wide {
-        width: 100%;
-        justify-content: center;
-        padding: 12px 20px;
-        font-size: 16px;
-      }
-      
       .filters {
         gap: 8px;
       }
@@ -724,11 +702,7 @@
       .content-wrapper {
         padding: 32px 56px;
       }
-      
-      .card {
-        padding: 36px 32px;
-      }
-      
+
       .title {
         font-size: 36px;
       }
@@ -752,6 +726,59 @@
     ::-webkit-scrollbar-thumb {
       background: #b2957b;
       border-radius: 10px;
+    }
+        /* Кнопка создания обращения - фиксированная снизу по центру */
+    .create-btn-bottom {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+    }
+
+    .create-btn-wide {
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+      border: none;
+      border-radius: 16px;
+      padding: 14px 36px;
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      transition: transform 0.15s, box-shadow 0.15s;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+    }
+
+    .create-btn-wide:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Отступ снизу для контента, чтобы не перекрывался кнопкой */
+    .content-wrapper {
+      margin-left: 250px;
+      padding: 28px 42px 100px 42px;
+      width: calc(100% - 250px);
+      transition: margin 0.3s ease;
+    }
+
+    /* Адаптивность для мобильных */
+    @media (max-width: 768px) {
+      .content-wrapper {
+        margin-left: 0;
+        width: 100%;
+        padding: 16px 16px 80px 16px;
+      }
+      
+      .create-btn-wide {
+        padding: 12px 24px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -804,7 +831,7 @@
     <button class="burger" id="burgerBtn" onclick="toggleSidebar()">
       <span></span><span></span><span></span>
     </button>
-    
+
     <div class="mobile-user-area">
       <div class="mobile-profile-clickable" id="mobileProfileClickable">
         <div class="mobile-profile-icon">
@@ -824,9 +851,24 @@
       </div>
     </div>
   </div>
+              <!-- Поиск -->
+    <div class="mobile-search-row">
+      <div class="search">
+        <i>🔍</i>
+        <input type="text" id="searchInput" placeholder="Поиск по номеру, теме, услуге...">
+      </div>
+    </div>
 
+  <div class="content-wrapper">
   <!-- Десктопный профиль -->
-  <div class="profile">
+  <div class="top-actions">
+        <!-- Поиск -->
+    <div class="search-row">
+      <div class="search">
+        <i>🔍</i>
+        <input type="text" id="searchInput" placeholder="Поиск по номеру, теме, услуге...">
+      </div>
+    </div>
     <div class="profile-info" id="desktopProfileInfo">
       <div class="profile-icon">
         <svg viewBox="0 0 24 24" width="32" height="32" fill="#111">
@@ -844,21 +886,7 @@
       <span class="logout-tooltip">Выход</span>
     </div>
   </div>
-
-  <div class="content-wrapper">
-    <!-- Заголовок -->
-    <div class="page-head">
-      <h1 class="title">Мои обращения</h1>
-    </div>
-
-    <!-- Поиск -->
-    <div class="search-row">
-      <div class="search">
-        <i>🔍</i>
-        <input type="text" id="searchInput" placeholder="Поиск по номеру, теме, услуге...">
-      </div>
-    </div>
-
+  
     <!-- Блок фильтров -->
     <div class="filters-section">
       <div class="filters" id="filterBar">
@@ -901,8 +929,8 @@
 
     <!-- Секция обратных звонков (если есть) -->
     <div id="callbackSection" style="display:none" class="callback-section">
-      <div class="cb-title">📞 История обратных звонков</div>
       <div class="card">
+        <div class="card-header"><h2>История обратных звонков</h2></div>
         <div class="table-wrap">
           <table id="callbackTable">
             <thead><tr><th>№</th><th>Дата</th><th>Тема</th><th>Статус</th></tr></thead>
