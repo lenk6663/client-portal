@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: tppo
       POSTGRES_PASSWORD: tppo_pass
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - db-internal-data:/var/lib/postgresql/data
     healthcheck:

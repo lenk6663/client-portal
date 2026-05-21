@@ -13,7 +13,7 @@ router.use(requireAuth);
 const createTicketSchema = z.object({
   subject:     z.string().min(3).max(500),
   description: z.string().optional(),
-  type:        z.enum(['ticket', 'consultation', 'complaint', 'request']).default('ticket'),
+  type:        z.enum(['ticket', 'consultation', 'complaint', 'request', 'callback']).default('ticket'),
   urgency:     z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
   services:    z.array(z.string()).optional(),
 });
@@ -25,6 +25,8 @@ const updateTicketSchema = z.object({
   status_code:         z.string().optional(),
   assigned_department: z.string().optional(),
   services:            z.array(z.string()).optional(),
+  approval:            z.record(z.unknown()).nullable().optional(),
+  review:              z.record(z.unknown()).nullable().optional(),
   version:             z.number().int().positive(),  // для optimistic locking
 });
 
@@ -65,8 +67,10 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
               u.name  AS client_name,
               u.phone AS client_phone,
               COALESCE(
-                (SELECT json_agg(ts.service_code ORDER BY ts.sort_order)
-                 FROM ticket_services ts WHERE ts.ticket_id = t.id), '[]'
+                (SELECT json_agg(COALESCE(s.name, ts.service_code) ORDER BY ts.sort_order)
+                 FROM ticket_services ts
+                 LEFT JOIN services s ON s.code = ts.service_code
+                 WHERE ts.ticket_id = t.id), '[]'
               ) AS services
        FROM tickets t
        JOIN users u ON u.id = t.client_id
@@ -116,12 +120,19 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         [ticketId, userId, orgId, data.subject, data.description, data.type, data.urgency],
       );
 
-      // Услуги
+      // Услуги — принимаем как названия (рус.), так и коды
       if (data.services && data.services.length > 0) {
         for (let i = 0; i < data.services.length; i++) {
+          const svcInput = data.services[i];
+          const svcLookup = await client.query(
+            `SELECT code FROM services WHERE name = $1 OR code = $1 LIMIT 1`,
+            [svcInput],
+          );
+          const svcCode = svcLookup.rows[0]?.code ?? svcInput;
           await client.query(
-            `INSERT INTO ticket_services (ticket_id, service_code, sort_order) VALUES ($1, $2, $3)`,
-            [ticketId, data.services[i], i],
+            `INSERT INTO ticket_services (ticket_id, service_code, sort_order) VALUES ($1, $2, $3)
+             ON CONFLICT DO NOTHING`,
+            [ticketId, svcCode, i],
           );
         }
       }
@@ -168,8 +179,10 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
               u.name  AS client_name,
               u.phone AS client_phone,
               COALESCE(
-                (SELECT json_agg(ts.service_code ORDER BY ts.sort_order)
-                 FROM ticket_services ts WHERE ts.ticket_id = t.id), '[]'
+                (SELECT json_agg(COALESCE(s.name, ts.service_code) ORDER BY ts.sort_order)
+                 FROM ticket_services ts
+                 LEFT JOIN services s ON s.code = ts.service_code
+                 WHERE ts.ticket_id = t.id), '[]'
               ) AS services
        FROM tickets t
        JOIN users u ON u.id = t.client_id
@@ -241,6 +254,34 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
         }
       }
 
+      // approval / review — отдельная обработка (JSONB)
+      if (data.approval !== undefined) {
+        await client.query(
+          `INSERT INTO ticket_history (ticket_id, changed_by_user_id, field_name, old_value, new_value, source)
+           VALUES ($1, $2, 'approval', $3, $4, 'client')`,
+          [id, userId,
+           ticket.approval ? JSON.stringify(ticket.approval) : '',
+           JSON.stringify(data.approval)],
+        );
+        fields.push(`approval = $${p++}`);
+        vals.push(data.approval === null ? null : JSON.stringify(data.approval));
+      }
+      if (data.review !== undefined) {
+        await client.query(
+          `INSERT INTO ticket_history (ticket_id, changed_by_user_id, field_name, old_value, new_value, source)
+           VALUES ($1, $2, 'review', $3, $4, 'client')`,
+          [id, userId,
+           ticket.review ? JSON.stringify(ticket.review) : '',
+           JSON.stringify(data.review)],
+        );
+        fields.push(`review = $${p++}`);
+        vals.push(data.review === null ? null : JSON.stringify(data.review));
+        // Если есть review, статус → done
+        if (data.review && ticket.status_code !== 'done') {
+          fields.push(`status_code = $${p++}`); vals.push('done');
+        }
+      }
+
       fields.push(`version = $${p++}`); vals.push(ticket.version + 1);
       fields.push(`sync_status = 'pending'`);
       vals.push(id);
@@ -250,13 +291,21 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
         vals,
       );
 
-      // Обновляем услуги
+      // Обновляем услуги — принимаем как названия, так и коды
       if (data.services !== undefined) {
         await client.query(`DELETE FROM ticket_services WHERE ticket_id = $1`, [id]);
         for (let i = 0; i < data.services.length; i++) {
+          const svcInput = data.services[i];
+          // Находим service_code либо по name либо по code
+          const svcLookup = await client.query(
+            `SELECT code FROM services WHERE name = $1 OR code = $1 LIMIT 1`,
+            [svcInput],
+          );
+          const svcCode = svcLookup.rows[0]?.code ?? svcInput;
           await client.query(
-            `INSERT INTO ticket_services (ticket_id, service_code, sort_order) VALUES ($1, $2, $3)`,
-            [id, data.services[i], i],
+            `INSERT INTO ticket_services (ticket_id, service_code, sort_order) VALUES ($1, $2, $3)
+             ON CONFLICT DO NOTHING`,
+            [id, svcCode, i],
           );
         }
       }

@@ -410,6 +410,7 @@
 
 </div>
 
+<script src="api.js"></script>
 <script>
 const canvas = document.getElementById("liquid");
 const ctx = canvas.getContext("2d");
@@ -474,14 +475,21 @@ function animate() {
 animate();
 
 // ===== LOGIN LOGIC =====
-function showToast(msg) {
+
+// Если уже авторизован — сразу на дашборд
+if (TPPO.Auth.isLoggedIn()) {
+  window.location.replace('Дашборд.html');
+}
+
+function showToast(msg, isError) {
   var toast = document.getElementById('appToast');
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'appToast';
-    toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';
+    toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';
     document.body.appendChild(toast);
   }
+  toast.style.background = isError ? 'rgba(180,30,30,0.92)' : 'rgba(20,20,20,0.88)';
   toast.textContent = msg;
   toast.style.opacity = '1';
   toast.style.transform = 'translateX(-50%) translateY(0)';
@@ -489,30 +497,19 @@ function showToast(msg) {
   toast._t = setTimeout(function() {
     toast.style.opacity = '0';
     toast.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 2800);
+  }, 3500);
 }
 
-var loginBtn = document.querySelector('.login-btn');
-if (loginBtn) {
-  loginBtn.addEventListener('click', function() {
-    localStorage.setItem('tppo_authed', '1');
-    loginBtn.textContent = 'Вхожу...';
-    loginBtn.disabled = true;
-    setTimeout(function() { window.location.href = 'Дашборд.html'; }, 350);
-  });
-}
+var inputs = document.querySelectorAll('.right-side input');
+var phoneInput = inputs[0];  // Номер телефона
+var smsInput   = inputs[2];  // Код из SMS (3-й блок)
+var loginBtn   = document.querySelector('.login-btn');
+var smsLink    = document.querySelector('.sms-link');
+var eyeIcon    = document.querySelector('.eye-icon');
 
-var smsLink = document.querySelector('.sms-link');
-if (smsLink) {
-  smsLink.addEventListener('click', function() {
-    showToast('Код отправлен на ваш номер телефона');
-  });
-}
-
-// Eye icon toggle for password
-var eyeIcon = document.querySelector('.eye-icon');
+// Eye icon toggle
 if (eyeIcon) {
-  eyeIcon.addEventListener('click', function() {
+  eyeIcon.addEventListener('click', function () {
     var pwdInput = eyeIcon.closest('.input-group').querySelector('input');
     if (pwdInput) {
       if (pwdInput.type === 'password') { pwdInput.type = 'text'; eyeIcon.textContent = '🙈'; }
@@ -521,10 +518,80 @@ if (eyeIcon) {
   });
 }
 
-// Enter key to login
-document.querySelectorAll('.right-side input').forEach(function(inp) {
-  inp.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && loginBtn) loginBtn.click();
+// Нормализация номера телефона → +7XXXXXXXXXX
+function normalizePhone(raw) {
+  var digits = raw.replace(/\D/g, '');
+  if (digits.length === 11 && (digits[0] === '7' || digits[0] === '8')) {
+    return '+7' + digits.slice(1);
+  }
+  if (digits.length === 10) {
+    return '+7' + digits;
+  }
+  return '+' + digits;
+}
+
+// «Получить код» — запрашиваем OTP
+if (smsLink) {
+  smsLink.addEventListener('click', async function () {
+    var phone = normalizePhone((phoneInput ? phoneInput.value : '').trim());
+    if (!phone || phone.length < 12) {
+      showToast('Введите номер телефона', true);
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+    smsLink.style.pointerEvents = 'none';
+    smsLink.textContent = '...';
+    try {
+      var result = await TPPO.requestOtp(phone);
+      if (result.dev_code) {
+        showToast('Код (DEV): ' + result.dev_code);
+        if (smsInput) { smsInput.value = result.dev_code; }
+      } else {
+        showToast('Код отправлен на ' + phone);
+      }
+    } catch (e) {
+      showToast(e.message || 'Ошибка отправки кода', true);
+    } finally {
+      smsLink.style.pointerEvents = '';
+      smsLink.textContent = 'Получить код';
+    }
+  });
+}
+
+// «Войти» — проверяем OTP и получаем токены
+if (loginBtn) {
+  loginBtn.addEventListener('click', async function () {
+    var phone = normalizePhone((phoneInput ? phoneInput.value : '').trim());
+    var code  = (smsInput ? smsInput.value : '').trim();
+
+    if (!phone || phone.length < 12) {
+      showToast('Введите номер телефона', true);
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+    if (!code || code.length !== 6) {
+      showToast('Введите 6-значный код из SMS', true);
+      if (smsInput) smsInput.focus();
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Вхожу...';
+    try {
+      await TPPO.verifyOtp(phone, code);
+      window.location.href = 'Дашборд.html';
+    } catch (e) {
+      showToast(e.message || 'Неверный код или истёк срок действия', true);
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Войти';
+    }
+  });
+}
+
+// Enter → клик по «Войти»
+document.querySelectorAll('.right-side input').forEach(function (inp) {
+  inp.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && loginBtn && !loginBtn.disabled) loginBtn.click();
   });
 });
 </script>

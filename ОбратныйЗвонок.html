@@ -690,7 +690,7 @@
             <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
           </svg>
         </div>
-        <span class="mobile-user-name">Александра</span>
+        <span class="mobile-user-name" id="mobileUserName">...</span>
       </div>
       <div class="mobile-logout-wrapper" id="mobileLogoutBtn">
         <div class="mobile-logout-icon">
@@ -710,7 +710,7 @@
           <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
         </svg>
       </div>
-      <span>Александра</span>
+      <span id="desktopUserName">...</span>
     </div>
     <div class="logout-btn" id="desktopLogoutBtn">
       <div class="logout-icon">
@@ -791,54 +791,107 @@
   </div>
 </main>
 
+<script src="api.js"></script>
 <script>
-  var TPPO_KEYS = { tickets:'tppo_tickets', msgs:function(id){return 'tppo_msgs_'+id;}, user:'tppo_user' };
-  function getTickets(){ try{ return JSON.parse(localStorage.getItem(TPPO_KEYS.tickets)||'null')||[]; }catch(e){ return []; } }
-  function saveTickets(arr){ localStorage.setItem(TPPO_KEYS.tickets,JSON.stringify(arr)); }
   function showToast(msg){ var t=document.getElementById('appToast'); if(!t){t=document.createElement('div');t.id='appToast';t.style.cssText='position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';document.body.appendChild(t);} t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2800); }
 
+  // ---- Имя пользователя
+  (function initUser() {
+    var desktopSpan = document.getElementById('desktopUserName');
+    var mobileSpan  = document.getElementById('mobileUserName');
+    function setName(n) {
+      if (desktopSpan) desktopSpan.textContent = n;
+      if (mobileSpan)  mobileSpan.textContent  = n;
+    }
+    setName(TPPO.Auth.getDisplayName());
+    TPPO.getProfile().then(function(p) {
+      setName(TPPO.Auth.getDisplayName());
+      // Подставляем телефон и имя в форму из профиля
+      var u = TPPO.Auth.getUser();
+      var inputs = document.querySelectorAll('.input');
+      if (inputs[0] && u && u.phone) inputs[0].value = u.phone;
+      if (inputs[1] && u && u.name)  inputs[1].value = u.name;
+    }).catch(function(){});
+  })();
+
   // ---- Sidebar
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('overlay');
   function openSidebar() { if (window.innerWidth <= 768) { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; } }
   function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
-  window.toggleSidebar = function() { sidebar.classList.contains('active')?closeSidebar():openSidebar(); };
+  window.toggleSidebar = function() { sidebar.classList.contains('active') ? closeSidebar() : openSidebar(); };
   if (overlay) overlay.addEventListener('click', closeSidebar);
-  let touchStartX = 0;
-  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].clientX; });
-  document.addEventListener('touchend', (e) => { const dx=e.changedTouches[0].clientX-touchStartX; if(window.innerWidth<=768){if(dx>70&&!sidebar.classList.contains('active'))openSidebar();if(dx<-70&&sidebar.classList.contains('active'))closeSidebar();} });
-  window.addEventListener('resize', () => { if(window.innerWidth>768&&sidebar.classList.contains('active')){sidebar.classList.remove('active');overlay.classList.remove('active');document.body.style.overflow='';} });
+  var touchStartX = 0;
+  document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].clientX; });
+  document.addEventListener('touchend',   function(e) { var dx=e.changedTouches[0].clientX-touchStartX; if(window.innerWidth<=768){if(dx>70&&!sidebar.classList.contains('active'))openSidebar();if(dx<-70&&sidebar.classList.contains('active'))closeSidebar();} });
+  window.addEventListener('resize', function() { if(window.innerWidth>768&&sidebar.classList.contains('active')){sidebar.classList.remove('active');overlay.classList.remove('active');document.body.style.overflow='';} });
 
-  var routeMap={'dashboard':'Дашборд.html','my-tickets':'МоиОбращения.html','call-order':'ОбратныйЗвонок.html','settings':'Настройки.html'};
-  document.querySelectorAll('[data-route]').forEach(function(item){ item.addEventListener('click',function(e){ e.stopPropagation(); var r=item.dataset.route; if(routeMap[r]&&r!=='call-order') window.location.href=routeMap[r]; if(window.innerWidth<=768) setTimeout(closeSidebar,80); }); });
+  var routeMap = {'dashboard':'Дашборд.html','my-tickets':'МоиОбращения.html','call-order':'ОбратныйЗвонок.html','settings':'Настройки.html'};
+  document.querySelectorAll('[data-route]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var r = item.dataset.route;
+      if (r === 'call-order') return;  // уже на этой странице
+      if (routeMap[r]) window.location.href = routeMap[r];
+      if (window.innerWidth <= 768) setTimeout(closeSidebar, 80);
+    });
+  });
 
-  const logoButton = document.getElementById('logoDashboardBtn');
-  if (logoButton) logoButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href='Дашборд.html'; });
-  document.getElementById('desktopProfileInfo')?.addEventListener('click', () => window.location.href='Настройки.html');
-  document.getElementById('mobileProfileClickable')?.addEventListener('click', () => window.location.href='Настройки.html');
-  document.getElementById('desktopLogoutBtn')?.addEventListener('click', () => window.location.href='ФормаВхода.html');
-  document.getElementById('mobileLogoutBtn')?.addEventListener('click', () => window.location.href='ФормаВхода.html');
+  var logoButton = document.getElementById('logoDashboardBtn');
+  if (logoButton) logoButton.addEventListener('click', function() { window.location.href = 'Дашборд.html'; });
 
-  // ---- Submit callback
-  function submitCallbackRequest() {
-    var selects=document.querySelectorAll('.select');
-    var service=selects[0]?selects[0].options[selects[0].selectedIndex]?.text:'Обратный звонок';
-    var inputs=document.querySelectorAll('.input');
-    var phoneVal=inputs[0]?inputs[0].value.trim():'';
-    var textarea=document.querySelector('.textarea');
-    var desc=textarea?textarea.value.trim():'';
-    if(!phoneVal){ showToast('Введите номер телефона'); return; }
-    var tickets=getTickets();
-    var maxNum=0; tickets.forEach(function(t){ var n=parseInt(t.number)||0; if(n>maxNum)maxNum=n; });
-    var newNum=maxNum+1;
-    var d=new Date(); var dateStr=d.getDate().toString().padStart(2,'0')+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear();
-    var ticket={id:'ticket_'+newNum,number:String(newNum),subject:'Обратный звонок: '+service,service:service,status:'new',statusLabel:'Новый',responsible:'—',hours:0,cost:0,createdAt:dateStr,updatedAt:dateStr,urgency:'medium',description:desc||'Запрос обратного звонка. Телефон: '+phoneVal,type:'callback'};
-    tickets.push(ticket); saveTickets(tickets);
-    window.location.href='МоиОбращения.html';
+  ['#desktopProfileInfo','#mobileProfileClickable'].forEach(function(sel){
+    var el = document.querySelector(sel);
+    if (el) el.addEventListener('click', function() { window.location.href = 'Настройки.html'; });
+  });
+
+  ['#desktopLogoutBtn','#mobileLogoutBtn'].forEach(function(sel) {
+    var el = document.querySelector(sel);
+    if (el) el.addEventListener('click', async function() {
+      await TPPO.logout();
+      window.location.href = 'ФормаВхода.html';
+    });
+  });
+
+  // ---- Отправка заявки через API
+  async function submitCallbackRequest() {
+    var selects  = document.querySelectorAll('.select');
+    var category = selects[0] ? selects[0].options[selects[0].selectedIndex].text : 'Обратный звонок';
+    var specialty= selects[1] ? selects[1].options[selects[1].selectedIndex].text : '';
+    var inputs   = document.querySelectorAll('.input');
+    var phoneVal = inputs[0] ? inputs[0].value.trim() : '';
+    var textarea = document.querySelector('textarea:not(.input)');
+    var desc     = textarea ? textarea.value.trim() : '';
+
+    if (!phoneVal) { showToast('Введите номер телефона'); return; }
+
+    var subject = 'Обратный звонок: ' + category;
+    var description = (desc || '') +
+      (desc ? '\n\n' : '') +
+      'Телефон: ' + phoneVal +
+      (specialty ? '\nТема: ' + specialty : '');
+
+    var btn = document.getElementById('submitBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Отправляем...'; }
+
+    try {
+      await TPPO.createTicket({
+        subject:     subject,
+        description: description,
+        type:        'callback',
+        urgency:     'medium',
+        services:    [specialty || category],
+      });
+      showToast('Заявка на звонок отправлена!');
+      setTimeout(function() { window.location.href = 'МоиОбращения.html'; }, 1200);
+    } catch(e) {
+      showToast('Ошибка: ' + (e.message || 'не удалось отправить заявку'));
+      if (btn) { btn.disabled = false; btn.textContent = '＋ Отправить заявку'; }
+    }
   }
 
-  const submitButton = document.querySelector('.create-btn');
-  if (submitButton) submitButton.addEventListener('click', () => submitCallbackRequest());
+  var submitButton = document.getElementById('submitBtn');
+  if (submitButton) submitButton.addEventListener('click', submitCallbackRequest);
 </script>
 </body>
 </html>

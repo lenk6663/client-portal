@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt    from 'jsonwebtoken';
 import crypto from 'crypto';
 import { z }  from 'zod';
-import { internalPool } from '../config/database';
+import { internalPool, externalPool } from '../config/database';
 import { requireAuth }  from '../middleware/auth';
 import { createError }  from '../middleware/errorHandler';
 
@@ -105,10 +105,30 @@ router.post('/verify', async (req: Request, res: Response, next: NextFunction) =
     );
 
     if (userResult.rowCount === 0) {
+      // Look up name and role from external DB (1C simulation)
+      let name = phone;
+      let role: 'client' | 'operator' | 'admin' = 'client';
+      try {
+        const extUser = await externalPool.query(
+          `SELECT "неоИмя", "неоРоль" FROM "неоПользователи" WHERE "неоТелефон" = $1`,
+          [phone],
+        );
+        if (extUser.rowCount && extUser.rowCount > 0) {
+          const row = extUser.rows[0];
+          if (row['неоИмя']) name = row['неоИмя'];
+          if (row['неоРоль'] === 'operator') role = 'operator';
+          else if (row['неоРоль'] === 'admin') role = 'admin';
+        }
+      } catch {
+        // External DB unavailable — proceed with defaults
+      }
+
+      const DEFAULT_ORG = '00000000-0000-0000-0000-000000000001';
       userResult = await internalPool.query(
-        `INSERT INTO users (phone, name, role) VALUES ($1, $2, 'client')
+        `INSERT INTO users (phone, name, role, organization_id)
+         VALUES ($1, $2, $3, $4)
          RETURNING id, phone, name, role`,
-        [phone, phone],
+        [phone, name, role, DEFAULT_ORG],
       );
     }
 
