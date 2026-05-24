@@ -1,58 +1,85 @@
-# Личный кабинет для клиентов компании 
+Вот обновлённая инструкция по запуску проекта:
+
+# Личный кабинет для клиентов компании
+
 ## Требования
 
-* Node.js 20+
 * Docker + Docker Compose
-* npm
+* (Опционально) Node.js 20+ для разработки
 
 ---
 
-## 1. Запуск инфраструктуры
+## Быстрый запуск (Docker)
+
+1. **Очистка старых контейнеров и запуск**
 
 ```bash
-docker compose up -d
+docker compose down -v
+docker compose up --build -d
 ```
 
-Проверка:
+2. **Открыть в браузере**
+
+```
+http://localhost:8080
+```
+
+---
+
+## Проверка статуса
 
 ```bash
 docker compose ps
 ```
 
-Поднимаются:
-
-* PostgreSQL (internal + external)
-* MinIO
+Убедитесь, что все сервисы в статусе `Running` или `Exited` (для миграций допустимо).
 
 ---
 
-## 2. Установка зависимостей
+## Остановка
 
 ```bash
-cd backend
-npm install
+docker compose down
 ```
 
----
-
-## 3. Запуск backend
+Полная очистка (включая тома с данными):
 
 ```bash
-npm run dev
+docker compose down -v
 ```
 
 ---
 
-## 4. После запуска
+## Что поднимается
 
-API:
+- **PostgreSQL** (internal + external)
+- **MinIO** (объектное хранилище)
+- **Backend API** (Node.js)
+- **Frontend** (Nginx)
+- **Миграции БД** (запускаются один раз)
 
+---
+
+## Доступ к сервисам
+
+- Веб-интерфейс: `http://localhost:8080`
+- Backend API: `http://localhost:3000` (внутри контейнера)
+- WebSocket: `ws://localhost:3000/ws`
+- MinIO Console: `http://localhost:9001`
+
+---
+
+## Логи
+
+Просмотр логов всех сервисов:
+
+```bash
+docker compose logs -f
 ```
-http://localhost:3000
-```
 
-WebSocket:
+Логи конкретного сервиса:
 
-```
-ws://localhost:3000/ws
+```bash
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
