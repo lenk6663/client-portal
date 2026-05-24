@@ -13,14 +13,14 @@ services:
       POSTGRES_USER: tppo
       POSTGRES_PASSWORD: tppo_pass
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - db-internal-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U tppo -d tppo_portal"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   # ──────────────────────────────────────────────────────────
   # Внешняя БД (симуляция 1С / vn_bd+td.sql)
@@ -40,9 +40,9 @@ services:
       - ./backend/docker/init-external.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U tppo -d neo_1c"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   # ──────────────────────────────────────────────────────────
   # MinIO — хранилище файлов (S3-совместимое)
@@ -65,6 +65,100 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+
+  # ──────────────────────────────────────────────────────────
+  # Миграции — одноразовый контейнер, запускается до backend
+  # ──────────────────────────────────────────────────────────
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tppo-migrate
+    restart: "no"
+    depends_on:
+      db-internal:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DB_INTERNAL_HOST: db-internal
+      DB_INTERNAL_PORT: 5432
+      DB_INTERNAL_NAME: tppo_portal
+      DB_INTERNAL_USER: tppo
+      DB_INTERNAL_PASS: tppo_pass
+    volumes:
+      - ./backend/src:/app/src:ro
+    command: ["npx", "ts-node", "src/db/migrate.ts"]
+
+  # ──────────────────────────────────────────────────────────
+  # Backend API (Node.js + ts-node-dev, hot-reload)
+  # ──────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tppo-backend
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      db-external:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_INTERNAL_HOST: db-internal
+      DB_INTERNAL_PORT: 5432
+      DB_INTERNAL_NAME: tppo_portal
+      DB_INTERNAL_USER: tppo
+      DB_INTERNAL_PASS: tppo_pass
+      DB_EXTERNAL_HOST: db-external
+      DB_EXTERNAL_PORT: 5432
+      DB_EXTERNAL_NAME: neo_1c
+      DB_EXTERNAL_USER: tppo
+      DB_EXTERNAL_PASS: tppo_pass
+      JWT_ACCESS_SECRET: dev_access_secret_change_in_production
+      JWT_REFRESH_SECRET: dev_refresh_secret_change_in_production
+      JWT_ACCESS_EXPIRES: 15m
+      JWT_REFRESH_EXPIRES: 30d
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_BUCKET: tppo-files
+      S3_REGION: us-east-1
+      S3_PUBLIC_ENDPOINT: http://localhost:9000
+      SMS_DEV_MODE: "true"
+      SYNC_INTERVAL_MS: "30000"
+      OUTBOX_POLL_INTERVAL_MS: "5000"
+    volumes:
+      - ./backend/src:/app/src
+
+  # ──────────────────────────────────────────────────────────
+  # Frontend — nginx, статика (HTML, JS)
+  # ──────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: tppo-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    volumes:
+      # Live mount — изменения HTML/JS видны после refresh браузера
+      - ./api.js:/usr/share/nginx/html/api.js:ro
+      - ./Дашборд.html:/usr/share/nginx/html/Дашборд.html:ro
+      - ./МоиОбращения.html:/usr/share/nginx/html/МоиОбращения.html:ro
+      - ./ДеталиОбращения.html:/usr/share/nginx/html/ДеталиОбращения.html:ro
+      - ./НовоеОбращение.html:/usr/share/nginx/html/НовоеОбращение.html:ro
+      - ./ОбратныйЗвонок.html:/usr/share/nginx/html/ОбратныйЗвонок.html:ro
+      - ./Настройки.html:/usr/share/nginx/html/Настройки.html:ro
+      - ./ФормаВхода.html:/usr/share/nginx/html/ФормаВхода.html:ro
 
 volumes:
   db-internal-data:

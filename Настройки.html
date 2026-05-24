@@ -833,8 +833,13 @@
           </div>
 
           <div class="input-wrap">
-            <input type="password" placeholder="Пароль: ************" id="passInput">
-            <i class="fa-regular fa-eye eye" onclick="togglePassword('passInput', this)"></i>
+            <input type="password" placeholder="Текущий пароль" id="oldPassInput" autocomplete="current-password">
+            <i class="fa-regular fa-eye eye" onclick="togglePassword('oldPassInput', this)"></i>
+          </div>
+
+          <div class="input-wrap">
+            <input type="password" placeholder="Новый пароль (мин. 6 символов)" id="newPassInput" autocomplete="new-password">
+            <i class="fa-regular fa-eye eye" onclick="togglePassword('newPassInput', this)"></i>
           </div>
         </div>
       </div>
@@ -884,6 +889,7 @@
   </div>
 </main>
 
+<script src="api.js"></script>
 <script>
   var TPPO_KEYS = { tickets:'tppo_tickets', msgs:function(id){return 'tppo_msgs_'+id;}, user:'tppo_user', settings:'tppo_settings' };
   function showToast(msg){ var t=document.getElementById('appToast'); if(!t){t=document.createElement('div');t.id='appToast';t.style.cssText='position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';document.body.appendChild(t);} t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2800); }
@@ -927,14 +933,42 @@
   }
   loadNotifSettings();
 
-  // ---- Save settings
-  function saveSettings() {
-    var phone = document.getElementById('phoneInput')?.value || '';
-    var email = document.getElementById('emailInput')?.value || '';
-    var u; try{ u=JSON.parse(localStorage.getItem(TPPO_KEYS.user)||'null'); }catch(e){} if(!u) u={};
-    u.phone=phone; u.email=email;
-    localStorage.setItem(TPPO_KEYS.user,JSON.stringify(u));
-    showToast('Настройки сохранены');
+  // ---- Save settings (профиль + опционально смена пароля)
+  async function saveSettings() {
+    var email   = document.getElementById('emailInput')?.value.trim() || '';
+    var oldPass = document.getElementById('oldPassInput')?.value || '';
+    var newPass = document.getElementById('newPassInput')?.value || '';
+    var btn = document.getElementById('saveSettingsBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Сохраняем...'; }
+
+    try {
+      // 1. Обновляем профиль (email)
+      try {
+        await TPPO.updateProfile({ email: email });
+      } catch (e) {
+        showToast('Не удалось сохранить email: ' + e.message);
+      }
+
+      // 2. Если задан новый пароль — меняем его
+      if (newPass) {
+        if (newPass.length < 6) {
+          showToast('Новый пароль должен быть минимум 6 символов');
+        } else {
+          try {
+            await TPPO.changePassword(oldPass, newPass);
+            showToast('Пароль обновлён');
+            document.getElementById('oldPassInput').value = '';
+            document.getElementById('newPassInput').value = '';
+          } catch (e) {
+            showToast('Ошибка смены пароля: ' + e.message);
+          }
+        }
+      } else {
+        showToast('Настройки сохранены');
+      }
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Сохранить изменения'; }
+    }
   }
 
   // ---- Sidebar

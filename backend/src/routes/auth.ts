@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt    from 'jsonwebtoken';
 import crypto from 'crypto';
 import { z }  from 'zod';
-import { internalPool } from '../config/database';
+import { internalPool, externalPool } from '../config/database';
 import { requireAuth }  from '../middleware/auth';
 import { createError }  from '../middleware/errorHandler';
 
@@ -34,17 +34,41 @@ async function storeRefreshToken(userId: string, token: string): Promise<void> {
 }
 
 // ──────────────────────────────────────────────────────────
-// POST /api/auth/login — запросить OTP-код
+// POST /api/auth/login — шаг 1: проверка пароля + генерация OTP
+// Без верного пароля код не отправляется.
 // ──────────────────────────────────────────────────────────
 const loginSchema = z.object({
-  phone: z.string().regex(/^\+7\d{10}$/, 'Формат: +79991234567'),
+  phone:    z.string().regex(/^\+7\d{10}$/, 'Формат: +79991234567'),
+  password: z.string().min(1, 'Введите пароль'),
 });
 
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { phone } = loginSchema.parse(req.body);
+    const { phone, password } = loginSchema.parse(req.body);
 
-    // Генерация 6-значного кода
+    // 1. Ищем пользователя
+    const userRes = await internalPool.query(
+      `SELECT id, password_hash FROM users WHERE phone = $1`,
+      [phone],
+    );
+    if (userRes.rowCount === 0) {
+      return next(createError('Неверный телефон или пароль', 401));
+    }
+    const user = userRes.rows[0];
+
+    // 2. Проверяем пароль
+    if (!user.password_hash) {
+      return next(createError(
+        'Для этого пользователя пароль ещё не задан. Обратитесь к администратору.',
+        401,
+      ));
+    }
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) {
+      return next(createError('Неверный телефон или пароль', 401));
+    }
+
+    // 3. Пароль верен — генерируем OTP
     const code = String(Math.floor(100000 + Math.random() * 900000));
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 минут
 
@@ -53,7 +77,6 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       [phone, code, expiresAt],
     );
 
-    // В DEV-режиме возвращаем код в ответе
     const devMode = process.env.SMS_DEV_MODE === 'true';
     if (!devMode) {
       // TODO: интеграция с SMS-провайдером
@@ -61,7 +84,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     }
 
     res.json({
-      message: 'Код отправлен',
+      message: 'Пароль принят. Код отправлен.',
       ...(devMode ? { dev_code: code } : {}),
     });
   } catch (err) {
@@ -105,10 +128,30 @@ router.post('/verify', async (req: Request, res: Response, next: NextFunction) =
     );
 
     if (userResult.rowCount === 0) {
+      // Look up name and role from external DB (1C simulation)
+      let name = phone;
+      let role: 'client' | 'operator' | 'admin' = 'client';
+      try {
+        const extUser = await externalPool.query(
+          `SELECT "неоИмя", "неоРоль" FROM "неоПользователи" WHERE "неоТелефон" = $1`,
+          [phone],
+        );
+        if (extUser.rowCount && extUser.rowCount > 0) {
+          const row = extUser.rows[0];
+          if (row['неоИмя']) name = row['неоИмя'];
+          if (row['неоРоль'] === 'operator') role = 'operator';
+          else if (row['неоРоль'] === 'admin') role = 'admin';
+        }
+      } catch {
+        // External DB unavailable — proceed with defaults
+      }
+
+      const DEFAULT_ORG = '00000000-0000-0000-0000-000000000001';
       userResult = await internalPool.query(
-        `INSERT INTO users (phone, name, role) VALUES ($1, $2, 'client')
+        `INSERT INTO users (phone, name, role, organization_id)
+         VALUES ($1, $2, $3, $4)
          RETURNING id, phone, name, role`,
-        [phone, phone],
+        [phone, name, role, DEFAULT_ORG],
       );
     }
 

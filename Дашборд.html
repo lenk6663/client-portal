@@ -232,6 +232,33 @@
       margin-bottom: 10px;
     }
 
+    /* Marquee on hover */
+    .marquee-cell {
+      display: block;
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+    .marquee-cell .marquee-inner {
+      display: inline-block;
+      white-space: nowrap;
+      max-width: 100%;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      vertical-align: bottom;
+      transition: transform 0.3s ease;
+    }
+    .marquee-cell.marquee-active .marquee-inner {
+      max-width: none;
+      overflow: visible;
+      text-overflow: clip;
+    }
+    /* short ellipsis variant (for very-narrow cells) */
+    .ticket .ticket-title.marquee-cell .marquee-inner {
+      max-width: 100%;
+    }
+
     .ticket-date {
       font-size: 13px;
       color: #a4a0a0;
@@ -713,7 +740,7 @@
             <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
           </svg>
         </div>
-        <span class="mobile-user-name">Александра</span>
+        <span class="mobile-user-name" id="mobileUserName">...</span>
       </div>
       <div class="mobile-logout-wrapper" id="mobileLogoutBtn">
         <div class="mobile-logout-icon">
@@ -733,7 +760,7 @@
           <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
         </svg>
       </div>
-      <span>Александра</span>
+      <span id="desktopUserName">...</span>
     </div>
     <div class="logout-btn" id="desktopLogoutBtn">
       <div class="logout-icon">
@@ -791,127 +818,161 @@
   </div>
 </main>
 
+<script src="api.js"></script>
 <script>
-// ===== SHARED DATA =====
-var TPPO_KEYS = { tickets: 'tppo_tickets', msgs: function(id){ return 'tppo_msgs_'+id; }, user: 'tppo_user', settings: 'tppo_settings' };
-var DATA_VERSION = '2';
-
-var INITIAL_TICKETS = [
-  { id:'ticket_1001', number:'1001', subject:'Настройка отчётности', service:'Сопровождение 1С', services:['Сопровождение 1С'], status:'done', statusLabel:'Завершено', responsible:'Иванов И.И.', hours:5, cost:15000, createdAt:'12.02.2026', updatedAt:'15.02.2026', urgency:'medium', description:'Требуется настройка отчётности в 1С.', type:'ticket', files:[], approval:null, review:{rating:5,comment:'Всё отлично!',closedAt:'15.02.2026'}, history:[{date:'12.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'15.02.2026',time:'14:30:00',author:'Иванов И.И.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1002', number:'1002', subject:'Ошибка в базе данных', service:'Анализ баз данных', services:['Анализ баз данных'], status:'on_approval', statusLabel:'На согласовании', responsible:'Петров П.П.', hours:3, cost:9000, createdAt:'15.02.2026', updatedAt:'18.02.2026', urgency:'high', description:'При открытии формы документа происходит ошибка.', type:'ticket', files:[], approval:{status:'pending',contract:'СЦ-11619',rate:1400,hours:24,discount:5,cost:31920,deadline:'25.04.2026',proposedAt:'20.04.2026',effect:'При открытии в форме не отображается расширение объекта. Требуется доработка.'}, review:null, history:[{date:'15.02.2026',time:'09:14:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'15.02.2026',time:'10:00:00',author:'Петров П.П.',field:'status',oldValue:'Новый',newValue:'В работе'},{date:'16.02.2026',time:'14:00:00',author:'Петров П.П.',field:'status',oldValue:'В работе',newValue:'На оценке'},{date:'18.02.2026',time:'09:30:00',author:'Петров П.П.',field:'status',oldValue:'На оценке',newValue:'На согласовании'}] },
-  { id:'ticket_1003', number:'1003', subject:'Интеграция оборудования', service:'Интеграция', services:['Интеграция'], status:'new', statusLabel:'Новый', responsible:'Сидоров А.А.', hours:0, cost:0, createdAt:'18.02.2026', updatedAt:'18.02.2026', urgency:'medium', description:'Необходима интеграция нового оборудования.', type:'ticket', files:[], approval:null, review:null, history:[{date:'18.02.2026',time:'10:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'}] },
-  { id:'ticket_1004', number:'1004', subject:'Обновление ERP', service:'Сопровождение ERP', services:['Сопровождение ERP'], status:'done', statusLabel:'Завершено', responsible:'Кузнецов Д.Д.', hours:12, cost:36000, createdAt:'20.02.2026', updatedAt:'25.02.2026', urgency:'low', description:'Обновление ERP-системы.', type:'ticket', files:[], approval:null, review:{rating:4,comment:'',closedAt:'25.02.2026'}, history:[{date:'20.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'25.02.2026',time:'16:00:00',author:'Кузнецов Д.Д.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1005', number:'1005', subject:'Консультация по лицензиям', service:'Аудит лицензий', services:['Аудит лицензий'], status:'done', statusLabel:'Завершено', responsible:'Смирнов С.С.', hours:4, cost:12000, createdAt:'25.02.2026', updatedAt:'28.02.2026', urgency:'low', description:'Консультация по лицензионному портфелю.', type:'ticket', files:[], approval:null, review:null, history:[{date:'25.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'28.02.2026',time:'15:00:00',author:'Смирнов С.С.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1006', number:'1006', subject:'Разработка модуля', service:'Реальная автоматизация', services:['Реальная автоматизация','Интеграция'], status:'pending_eval', statusLabel:'На оценке', responsible:'Орлов В.В.', hours:10, cost:30000, createdAt:'02.03.2026', updatedAt:'10.03.2026', urgency:'high', description:'Разработка нового модуля интеграции с внешней системой.', type:'ticket', files:[], approval:null, review:null, history:[{date:'02.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'05.03.2026',time:'10:00:00',author:'Орлов В.В.',field:'status',oldValue:'Новый',newValue:'В работе'},{date:'10.03.2026',time:'11:00:00',author:'Орлов В.В.',field:'status',oldValue:'В работе',newValue:'На оценке'}] },
-  { id:'ticket_1007', number:'1007', subject:'Ошибка в отчёте', service:'Сервисы ИТС', services:['Сервисы ИТС'], status:'done', statusLabel:'Завершено', responsible:'Федоров Н.Н.', hours:2, cost:6000, createdAt:'05.03.2026', updatedAt:'07.03.2026', urgency:'medium', description:'В отчёте неверно отображаются данные.', type:'ticket', files:[], approval:null, review:null, history:[{date:'05.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'07.03.2026',time:'14:00:00',author:'Федоров Н.Н.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1008', number:'1008', subject:'Переход на новую систему', service:'Переход с 1С:УПП', services:['Переход с 1С:УПП'], status:'progress', statusLabel:'В работе', responsible:'Алексеев К.К.', hours:8, cost:24000, createdAt:'10.03.2026', updatedAt:'15.03.2026', urgency:'high', description:'Переход с устаревшей системы.', type:'ticket', files:[], approval:null, review:null, history:[{date:'10.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'11.03.2026',time:'10:00:00',author:'Алексеев К.К.',field:'status',oldValue:'Новый',newValue:'В работе'}] },
-  { id:'ticket_1009', number:'1009', subject:'Настройка MES', service:'MES для производства', services:['MES для производства'], status:'new', statusLabel:'Новый', responsible:'Васильев Л.Л.', hours:0, cost:0, createdAt:'15.03.2026', updatedAt:'15.03.2026', urgency:'medium', description:'Настройка системы управления производством.', type:'ticket', files:[], approval:null, review:null, history:[{date:'15.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'}] },
-  { id:'ticket_1010', number:'1010', subject:'Подключение сервиса', service:'Сервисы ИТС', services:['Сервисы ИТС'], status:'done', statusLabel:'Завершено', responsible:'Павлов М.М.', hours:3, cost:9000, createdAt:'20.03.2026', updatedAt:'22.03.2026', urgency:'low', description:'Подключение сервисов ИТС-ПРОФ.', type:'ticket', files:[], approval:null, review:null, history:[{date:'20.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'22.03.2026',time:'15:00:00',author:'Павлов М.М.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1011', number:'1011', subject:'Миграция данных', service:'Анализ и миграция', services:['Анализ и миграция'], status:'progress', statusLabel:'В работе', responsible:'Новиков А.С.', hours:14, cost:42000, createdAt:'22.03.2026', updatedAt:'25.03.2026', urgency:'high', description:'Перенос данных из старой системы.', type:'ticket', files:[], approval:null, review:null, history:[{date:'22.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'24.03.2026',time:'09:00:00',author:'Новиков А.С.',field:'status',oldValue:'Новый',newValue:'В работе'}] },
-  { id:'ticket_1012', number:'1012', subject:'Настройка прав доступа', service:'Администрирование', services:['Администрирование'], status:'cancelled', statusLabel:'Отменено', responsible:'Морозова Е.В.', hours:2, cost:4500, createdAt:'25.03.2026', updatedAt:'26.03.2026', urgency:'low', description:'Настройка ролей и прав пользователей.', type:'ticket', files:[], approval:null, review:null, history:[{date:'25.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'26.03.2026',time:'10:30:00',author:'Александрова А.А.',field:'status',oldValue:'Новый',newValue:'Отменено'}] }
-];
-
-var INITIAL_MESSAGES = {
-  'ticket_1002': [
-    { id:'msg_1', author:'client', name:'Александрова А.А.', text:'Добрый день! Помогите разобраться с ошибкой в базе данных.', time:'09:14', date:'15.02.2026', isFirst:true },
-    { id:'msg_2', author:'staff', name:'Петров П.П.', text:'Здравствуйте! Принял задачу в работу. Уточните, при каких действиях возникает ошибка?', time:'09:45', date:'15.02.2026' },
-    { id:'msg_3', author:'client', name:'Александрова А.А.', text:'Ошибка возникает при открытии документа «Поступление товаров».', time:'10:03', date:'15.02.2026' },
-    { id:'msg_4', author:'staff', name:'Петров П.П.', text:'Понял. Скорее всего это связано с последним обновлением. Займёмся диагностикой в течение дня.', time:'10:15', date:'15.02.2026' }
-  ],
-  'ticket_1008': [
-    { id:'msg_1', author:'client', name:'Александрова А.А.', text:'Добрый день! Подскажите, с чего лучше начать переход с 1С:УПП?', time:'11:58', date:'10.03.2026', isFirst:true },
-    { id:'msg_2', author:'staff', name:'Алексеев К.К.', text:'Здравствуйте! Уточните, пожалуйста, какие основные процессы автоматизированы в УПП?', time:'12:10', date:'10.03.2026' },
-    { id:'msg_3', author:'client', name:'Александрова А.А.', text:'Производство, склады, закупки, продажи, зарплата. Система сильно доработана.', time:'12:24', date:'10.03.2026' },
-    { id:'msg_4', author:'staff', name:'Алексеев К.К.', text:'При наличии доработок переход обычно занимает 3–6 месяцев. Предлагаю начать с аудита доработок.', time:'12:35', date:'10.03.2026' }
-  ]
-};
-
-function getTickets() { try { return JSON.parse(localStorage.getItem(TPPO_KEYS.tickets)||'null')||[]; } catch(e){ return []; } }
-function saveTickets(arr) { localStorage.setItem(TPPO_KEYS.tickets, JSON.stringify(arr)); }
-function getMessages(id) { try { return JSON.parse(localStorage.getItem(TPPO_KEYS.msgs(id))||'null')||[]; } catch(e){ return []; } }
-function saveMessages(id, arr) { localStorage.setItem(TPPO_KEYS.msgs(id), JSON.stringify(arr)); }
-
-function initData() {
-  if (localStorage.getItem('tppo_v') === DATA_VERSION) return;
-  localStorage.setItem('tppo_v', DATA_VERSION);
-  saveTickets(INITIAL_TICKETS);
-  Object.keys(INITIAL_MESSAGES).forEach(function(id){ saveMessages(id, INITIAL_MESSAGES[id]); });
-  localStorage.setItem(TPPO_KEYS.user, JSON.stringify({ name:'Александра', fullName:'Александрова Александра Александровна', phone:'+7 999 123-45-67', email:'aleksandra@example.com' }));
-  localStorage.setItem(TPPO_KEYS.settings, JSON.stringify({ email:{ newMessage:true, statusChange:true, newOffer:false, responsible:false }, push:{ newMessage:true, statusChange:false, newOffer:false, responsible:true } }));
-}
-
-function showToast(msg) {
-  var toast = document.getElementById('appToast');
-  if (!toast) { toast = document.createElement('div'); toast.id='appToast'; toast.style.cssText='position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;'; document.body.appendChild(toast); }
-  toast.textContent = msg; toast.style.opacity='1'; toast.style.transform='translateX(-50%) translateY(0)';
-  clearTimeout(toast._t); toast._t = setTimeout(function(){ toast.style.opacity='0'; toast.style.transform='translateX(-50%) translateY(20px)'; }, 2800);
-}
+function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function handleRoute(route) {
   var map = { 'dashboard':'Дашборд.html', 'my-tickets':'МоиОбращения.html', 'call-order':'ОбратныйЗвонок.html', 'settings':'Настройки.html' };
   if (map[route]) window.location.href = map[route];
 }
 
+// Marquee: на hover длинный текст плывёт влево
+function bindMarquee(el) {
+  if (!el || el._marqueeBound) return;
+  el._marqueeBound = true;
+  var inner = el.querySelector('.marquee-inner');
+  if (!inner) return;
+  el.addEventListener('mouseenter', function() {
+    el.classList.add('marquee-active');
+    requestAnimationFrame(function() {
+      var overflow = inner.scrollWidth - el.clientWidth;
+      if (overflow <= 4) { el.classList.remove('marquee-active'); return; }
+      var duration = Math.max(2, overflow / 40);
+      inner.style.transition = 'transform ' + duration + 's linear 0.2s';
+      requestAnimationFrame(function() {
+        inner.style.transform = 'translateX(-' + overflow + 'px)';
+      });
+    });
+  });
+  el.addEventListener('mouseleave', function() {
+    inner.style.transition = 'transform 0.3s ease';
+    inner.style.transform = 'translateX(0)';
+    setTimeout(function() { el.classList.remove('marquee-active'); }, 300);
+  });
+}
+
+// ===== USER NAME =====
+(function initUser() {
+  var desktopSpan = document.getElementById('desktopUserName');
+  var mobileSpan  = document.getElementById('mobileUserName');
+  function setName(n) {
+    if (desktopSpan) desktopSpan.textContent = n;
+    if (mobileSpan)  mobileSpan.textContent  = n;
+  }
+  setName(TPPO.Auth.getDisplayName());
+  TPPO.getProfile().then(function() { setName(TPPO.Auth.getDisplayName()); }).catch(function(){});
+})();
+
 // ===== SIDEBAR =====
 var sidebar = document.getElementById('sidebar');
 var overlay = document.getElementById('overlay');
 
-function openSidebar() { if (window.innerWidth<=768){ sidebar.classList.add('active'); if(overlay) overlay.classList.add('active'); document.body.style.overflow='hidden'; } }
-function closeSidebar() { sidebar.classList.remove('active'); if(overlay) overlay.classList.remove('active'); document.body.style.overflow=''; }
+function openSidebar()  { if (window.innerWidth <= 768) { sidebar.classList.add('active');    if (overlay) overlay.classList.add('active');    document.body.style.overflow = 'hidden'; } }
+function closeSidebar() {                                  sidebar.classList.remove('active'); if (overlay) overlay.classList.remove('active'); document.body.style.overflow = '';       }
 window.toggleSidebar = function() { sidebar.classList.contains('active') ? closeSidebar() : openSidebar(); };
 if (overlay) overlay.addEventListener('click', closeSidebar);
 
 var tx = 0;
-document.addEventListener('touchstart', function(e){ tx = e.changedTouches[0].clientX; });
-document.addEventListener('touchend', function(e){
+document.addEventListener('touchstart', function(e) { tx = e.changedTouches[0].clientX; });
+document.addEventListener('touchend',   function(e) {
   var d = e.changedTouches[0].clientX - tx;
-  if (window.innerWidth<=768){ if(d>70&&!sidebar.classList.contains('active')) openSidebar(); if(d<-70&&sidebar.classList.contains('active')) closeSidebar(); }
+  if (window.innerWidth <= 768) {
+    if (d >  70 && !sidebar.classList.contains('active')) openSidebar();
+    if (d < -70 &&  sidebar.classList.contains('active')) closeSidebar();
+  }
 });
-window.addEventListener('resize', function(){ if(window.innerWidth>768&&sidebar.classList.contains('active')){ sidebar.classList.remove('active'); if(overlay) overlay.classList.remove('active'); document.body.style.overflow=''; } });
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
+    sidebar.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+});
 
-document.querySelectorAll('[data-route]').forEach(function(item){
-  item.addEventListener('click', function(e){ e.stopPropagation(); handleRoute(item.dataset.route); if(window.innerWidth<=768) setTimeout(closeSidebar,80); });
+document.querySelectorAll('[data-route]').forEach(function(item) {
+  item.addEventListener('click', function(e) {
+    e.stopPropagation();
+    handleRoute(item.dataset.route);
+    if (window.innerWidth <= 768) setTimeout(closeSidebar, 80);
+  });
 });
 
 var logoBtn = document.getElementById('logoDashboardBtn');
-if (logoBtn) logoBtn.addEventListener('click', function(){ window.location.href='Дашборд.html'; });
+if (logoBtn) logoBtn.addEventListener('click', function() { window.location.href = 'Дашборд.html'; });
 
 // ===== PROFILE & LOGOUT =====
-['#desktopProfileInfo','#mobileProfileClickable'].forEach(function(sel){ var el=document.querySelector(sel); if(el) el.addEventListener('click',function(){ window.location.href='Настройки.html'; }); });
-['#desktopLogoutBtn','#mobileLogoutBtn'].forEach(function(sel){ var el=document.querySelector(sel); if(el) el.addEventListener('click',function(){ window.location.href='ФормаВхода.html'; }); });
+['#desktopProfileInfo', '#mobileProfileClickable'].forEach(function(sel) {
+  var el = document.querySelector(sel);
+  if (el) el.addEventListener('click', function() { window.location.href = 'Настройки.html'; });
+});
+['#desktopLogoutBtn', '#mobileLogoutBtn'].forEach(function(sel) {
+  var el = document.querySelector(sel);
+  if (el) el.addEventListener('click', async function() {
+    await TPPO.logout();
+    window.location.href = 'ФормаВхода.html';
+  });
+});
 
 // ===== LOAD & RENDER TICKETS =====
-initData();
+var CLOSED = { done: true, closed: true, cancelled: true };
 
-function renderTickets() {
-  var tickets = getTickets();
+function renderTickets(tickets) {
   var container = document.getElementById('ticketsContainer');
   if (!container) return;
-  var last6 = tickets.slice(-6).reverse();
-  container.innerHTML = '';
-  last6.forEach(function(t) {
-    var div = document.createElement('div');
-    div.className = 'ticket';
-    div.dataset.id = t.id;
-    div.innerHTML = '<div class="status">Статус: ' + t.statusLabel + '</div><div class="ticket-title">' + t.subject + '</div><div class="ticket-date">Изменено: ' + t.updatedAt + ' ◷ Создано: ' + t.createdAt + '</div>';
-    div.addEventListener('click', function(e){ e.stopPropagation(); window.location.href='ДеталиОбращения.html?id='+t.id; });
-    container.appendChild(div);
-  });
-  // Update open count
+
+  var recent = tickets.slice(0, 6);       // backend returns updated_at DESC
+
+  if (!recent.length) {
+    container.innerHTML = '<div style="padding:32px;text-align:center;color:#a0958d;font-size:15px">Обращений пока нет</div>';
+  } else {
+    container.innerHTML = '';
+    recent.forEach(function(t) {
+      var div = document.createElement('div');
+      div.className = 'ticket';
+      // Callbacks: некликабельны
+      var isCallback = (t.type === 'callback');
+      if (isCallback) div.style.cursor = 'default';
+      div.innerHTML =
+        '<div class="status">№ ' + escapeHtml(t.number) + ' · ' + escapeHtml(t.statusLabel) + '</div>' +
+        '<div class="ticket-title marquee-cell"><span class="marquee-inner">' + escapeHtml(t.subject) + '</span></div>' +
+        '<div class="ticket-date">Изменено: ' + escapeHtml(t.updatedAt) + ' ◷ Создано: ' + escapeHtml(t.createdAt) + '</div>';
+      if (!isCallback) {
+        div.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (!t.id) { console.error('[Дашборд] клик по тикету без id:', t); return; }
+          sessionStorage.setItem('currentTicketId', t.id);
+          window.location.href = 'ДеталиОбращения.html?id=' + encodeURIComponent(t.id);
+        });
+      }
+      container.appendChild(div);
+      bindMarquee(div.querySelector('.ticket-title'));
+    });
+  }
+
   var subInfo = document.querySelector('.sub-info');
   if (subInfo) {
-    var open = tickets.filter(function(t){ return t.status !== 'done'; }).length;
+    var open = tickets.filter(function(t) { return !CLOSED[t.status]; }).length;
     subInfo.textContent = 'Всего открытых заявок: ' + open;
   }
 }
 
-renderTickets();
+(async function loadDashboard() {
+  var container = document.getElementById('ticketsContainer');
+  if (container) container.innerHTML = '<div style="padding:32px;text-align:center;color:#a0958d;font-size:15px">Загрузка...</div>';
+  try {
+    var tickets = await TPPO.getTickets();
+    renderTickets(tickets);
+  } catch(e) {
+    if (container) container.innerHTML = '<div style="padding:32px;text-align:center;color:#a0958d;font-size:15px">Не удалось загрузить обращения</div>';
+  }
+})();
 
 var allLink = document.getElementById('allTicketsLink');
-if (allLink) allLink.addEventListener('click', function(){ window.location.href='МоиОбращения.html'; });
+if (allLink) allLink.addEventListener('click', function() { window.location.href = 'МоиОбращения.html'; });
 
 var createButton = document.getElementById('createTicketBtn');
-if (createButton) createButton.addEventListener('click', function(){ window.location.href='НовоеОбращение.html'; });
+if (createButton) createButton.addEventListener('click', function() { window.location.href = 'НовоеОбращение.html'; });
 </script>
 </body>
 </html>

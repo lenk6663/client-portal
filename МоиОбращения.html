@@ -120,12 +120,15 @@
       transition: margin 0.3s ease;
     }
 
-    /* Десктопный блок сверху*/
-    .top-actions {
-      max-width: 100%;
+    /* Десктопный блок профиля (как в дашборде) */
+    .profile {
+      position: fixed;
+      top: 36px;
+      right: 56px;
       display: flex;
       align-items: center;
       gap: 12px;
+      z-index: 100;
     }
 
     .profile-info {
@@ -339,60 +342,47 @@
       margin-bottom: 16px;
     }
 
-  /* Поисковая строка */
-  .search-row {
-    margin-bottom: 20px;
-    width: 100%;
-  }
- /* МОбильная оисковая строка */
-  .mobile-search-row {
-    margin: 0px 2%;
-    width: 95%;
-    display: none;
-  }
-
-  .search {
-    width: 100%;
-    height: 46px;
-    border: 2px solid #b9b0a9;
-    border-radius: 14px;
-    background: #f3efeb;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 16px;
-  }
-
-  .search i {
-    color: #8c857f;
-    font-size: 18px;
-    font-style: normal;
-    font-weight: 400;
-  }
-
-  .search input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    outline: none;
-    font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    color: #222;
-  }
-
-  .search input::placeholder {
-    color: #9f9892;
-  }
-
-  /* Адаптивность для поиска */
-  @media (max-width: 768px) {
-    .mobile-search-row {
+    /* Поисковая строка */
+    .search-row {
+      margin-bottom: 20px;
+     }
+    
+    .search {
+      width: 100%;;
+      height: 46px;
+      border: 2px solid #b9b0a9;
+      border-radius: 14px;
+      background: #f3efeb;
       display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
     }
-  }
+
+    .search i {
+      color: #8c857f;
+      font-size: 18px;
+      font-style: normal;
+      font-weight: 400;
+    }
+
+    .search input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .search input::placeholder {
+      color: #9f9892;
+    }
+
     /* Блок фильтров */
     .filters-section {
-      margin-bottom: 10px;
+      margin-bottom: 24px;
     }
 
     .filters-label {
@@ -448,7 +438,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
       flex-wrap: wrap;
     }
 
@@ -461,7 +451,7 @@
     .sub-info {
       color: #a0958d;
       font-size: 14px;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
       font-weight: 500;
     }
 
@@ -471,7 +461,6 @@
       overflow-y: auto;
       max-height: 55vh;
       border-radius: 20px;
-      max-height: 45vh;
     }
 
     table {
@@ -504,6 +493,37 @@
       border-bottom: 1px solid rgba(0, 0, 0, 0.07);
       color: #2a2a2a;
       white-space: nowrap;
+    }
+
+    /* Marquee — ячейки усекаются до ~15 знаков, на hover «бегущая строка» */
+    .marquee-cell {
+      display: inline-block;
+      max-width: 130px;
+      overflow: hidden;
+      white-space: nowrap;
+      vertical-align: middle;
+      position: relative;
+    }
+    .marquee-cell .marquee-inner {
+      display: inline-block;
+      white-space: nowrap;
+      max-width: 130px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      vertical-align: bottom;
+      transition: transform 0.3s ease;
+    }
+    .marquee-cell.marquee-active .marquee-inner {
+      max-width: none;
+      overflow: visible;
+      text-overflow: clip;
+    }
+    /* Чуть шире для длинных полей (тема) */
+    .marquee-cell.wide {
+      max-width: 180px;
+    }
+    .marquee-cell.wide .marquee-inner {
+      max-width: 180px;
     }
 
     tbody tr {
@@ -566,6 +586,36 @@
       font-size: 13px;
     }
 
+    /* Кнопка создания обращения */
+    .create-btn-bottom {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .create-btn-wide {
+      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
+      border: none;
+      border-radius: 16px;
+      padding: 14px 36px;
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      transition: transform 0.15s, box-shadow 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .create-btn-wide:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+    }
+
     /* Секция обратных звонков */
     .callback-section {
       margin-top: 8px;
@@ -587,14 +637,6 @@
       height: 2px;
       background: rgba(0, 0, 0, 0.1);
       border-radius: 2px;
-    }
-
-    /* Отступ снизу для контента, чтобы не перекрывался кнопкой */
-    .content-wrapper {
-      margin-left: 250px;
-      padding: 28px 42px 100px 42px;  /* увеличил нижний отступ */
-      width: calc(100% - 250px);
-      transition: margin 0.3s ease;
     }
 
     /* Адаптивность */
@@ -619,7 +661,7 @@
         padding: 16px;
       }
 
-      .top-actions {
+      .profile {
         display: none;
       }
 
@@ -642,6 +684,10 @@
         font-size: 20px;
       }
 
+      .table-wrap {
+        max-height: 50vh;
+      }
+
       th, td {
         padding: 10px 8px;
         font-size: 13px;
@@ -653,6 +699,13 @@
         font-size: 13px;
       }
 
+      .create-btn-wide {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+        font-size: 16px;
+      }
+      
       .filters {
         gap: 8px;
       }
@@ -702,7 +755,11 @@
       .content-wrapper {
         padding: 32px 56px;
       }
-
+      
+      .card {
+        padding: 36px 32px;
+      }
+      
       .title {
         font-size: 36px;
       }
@@ -726,59 +783,6 @@
     ::-webkit-scrollbar-thumb {
       background: #b2957b;
       border-radius: 10px;
-    }
-        /* Кнопка создания обращения - фиксированная снизу по центру */
-    .create-btn-bottom {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-    }
-
-    .create-btn-wide {
-      background: linear-gradient(90deg, #f2c04d 0%, #ff8244 100%);
-      border: none;
-      border-radius: 16px;
-      padding: 14px 36px;
-      font-size: 18px;
-      font-weight: 700;
-      color: white;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-      transition: transform 0.15s, box-shadow 0.15s;
-      font-family: 'Inter', sans-serif;
-      white-space: nowrap;
-    }
-
-    .create-btn-wide:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
-    }
-
-    /* Отступ снизу для контента, чтобы не перекрывался кнопкой */
-    .content-wrapper {
-      margin-left: 250px;
-      padding: 28px 42px 100px 42px;
-      width: calc(100% - 250px);
-      transition: margin 0.3s ease;
-    }
-
-    /* Адаптивность для мобильных */
-    @media (max-width: 768px) {
-      .content-wrapper {
-        margin-left: 0;
-        width: 100%;
-        padding: 16px 16px 80px 16px;
-      }
-      
-      .create-btn-wide {
-        padding: 12px 24px;
-        font-size: 16px;
-      }
     }
   </style>
 </head>
@@ -831,7 +835,7 @@
     <button class="burger" id="burgerBtn" onclick="toggleSidebar()">
       <span></span><span></span><span></span>
     </button>
-
+    
     <div class="mobile-user-area">
       <div class="mobile-profile-clickable" id="mobileProfileClickable">
         <div class="mobile-profile-icon">
@@ -839,7 +843,7 @@
             <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
           </svg>
         </div>
-        <span class="mobile-user-name">Александра</span>
+        <span class="mobile-user-name" id="mobileUserName">...</span>
       </div>
       <div class="mobile-logout-wrapper" id="mobileLogoutBtn">
         <div class="mobile-logout-icon">
@@ -851,31 +855,16 @@
       </div>
     </div>
   </div>
-              <!-- Поиск -->
-    <div class="mobile-search-row">
-      <div class="search">
-        <i>🔍</i>
-        <input type="text" id="searchInput" placeholder="Поиск по номеру, теме, услуге...">
-      </div>
-    </div>
 
-  <div class="content-wrapper">
   <!-- Десктопный профиль -->
-  <div class="top-actions">
-        <!-- Поиск -->
-    <div class="search-row">
-      <div class="search">
-        <i>🔍</i>
-        <input type="text" id="searchInput" placeholder="Поиск по номеру, теме, услуге...">
-      </div>
-    </div>
+  <div class="profile">
     <div class="profile-info" id="desktopProfileInfo">
       <div class="profile-icon">
         <svg viewBox="0 0 24 24" width="32" height="32" fill="#111">
           <path d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
         </svg>
       </div>
-      <span>Александра</span>
+      <span id="desktopUserName">...</span>
     </div>
     <div class="logout-btn" id="desktopLogoutBtn">
       <div class="logout-icon">
@@ -886,7 +875,21 @@
       <span class="logout-tooltip">Выход</span>
     </div>
   </div>
-  
+
+  <div class="content-wrapper">
+    <!-- Заголовок -->
+    <div class="page-head">
+      <h1 class="title">Мои обращения</h1>
+    </div>
+
+    <!-- Поиск -->
+    <div class="search-row">
+      <div class="search">
+        <i>🔍</i>
+        <input type="text" id="searchInput" placeholder="Поиск по номеру, теме, услуге...">
+      </div>
+    </div>
+
     <!-- Блок фильтров -->
     <div class="filters-section">
       <div class="filters" id="filterBar">
@@ -929,8 +932,8 @@
 
     <!-- Секция обратных звонков (если есть) -->
     <div id="callbackSection" style="display:none" class="callback-section">
+      <div class="cb-title">📞 История обратных звонков</div>
       <div class="card">
-        <div class="card-header"><h2>История обратных звонков</h2></div>
         <div class="table-wrap">
           <table id="callbackTable">
             <thead><tr><th>№</th><th>Дата</th><th>Тема</th><th>Статус</th></tr></thead>
@@ -947,131 +950,203 @@
   </div>
 </main>
 
+<script src="api.js"></script>
 <script>
-// ===== SHARED DATA =====
-var TPPO_KEYS = { tickets: 'tppo_tickets', msgs: function(id){ return 'tppo_msgs_'+id; }, user: 'tppo_user', settings: 'tppo_settings' };
-var DATA_VERSION = '2';
+// ---- Имя пользователя
+var nameEls = [document.getElementById('desktopUserName'), document.getElementById('mobileUserName')];
+function setUserName(name) {
+  nameEls.forEach(function(el){ if(el) el.textContent = name; });
+}
+setUserName(TPPO.Auth.getDisplayName());
+TPPO.getProfile().then(function(p){ if(p && p.name) setUserName(p.name.split(' ')[0]); });
 
-var INITIAL_TICKETS = [
-  { id:'ticket_1001', number:'1001', subject:'Настройка отчётности', service:'Сопровождение 1С', services:['Сопровождение 1С'], status:'done', statusLabel:'Завершено', responsible:'Иванов И.И.', hours:5, cost:15000, createdAt:'12.02.2026', updatedAt:'15.02.2026', urgency:'medium', description:'Требуется настройка отчётности в 1С.', type:'ticket', files:[], approval:null, review:{rating:5,comment:'Всё отлично!',closedAt:'15.02.2026'}, history:[{date:'12.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'15.02.2026',time:'14:30:00',author:'Иванов И.И.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1002', number:'1002', subject:'Ошибка в базе данных', service:'Анализ баз данных', services:['Анализ баз данных'], status:'on_approval', statusLabel:'На согласовании', responsible:'Петров П.П.', hours:3, cost:9000, createdAt:'15.02.2026', updatedAt:'18.02.2026', urgency:'high', description:'При открытии формы документа происходит ошибка.', type:'ticket', files:[], approval:{status:'pending',contract:'СЦ-11619',rate:1400,hours:24,discount:5,cost:31920,deadline:'25.04.2026',proposedAt:'20.04.2026',effect:'При открытии в форме не отображается расширение объекта. Требуется доработка.'}, review:null, history:[{date:'15.02.2026',time:'09:14:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'15.02.2026',time:'10:00:00',author:'Петров П.П.',field:'status',oldValue:'Новый',newValue:'В работе'},{date:'16.02.2026',time:'14:00:00',author:'Петров П.П.',field:'status',oldValue:'В работе',newValue:'На оценке'},{date:'18.02.2026',time:'09:30:00',author:'Петров П.П.',field:'status',oldValue:'На оценке',newValue:'На согласовании'}] },
-  { id:'ticket_1003', number:'1003', subject:'Интеграция оборудования', service:'Интеграция', services:['Интеграция'], status:'new', statusLabel:'Новый', responsible:'Сидоров А.А.', hours:0, cost:0, createdAt:'18.02.2026', updatedAt:'18.02.2026', urgency:'medium', description:'Необходима интеграция нового оборудования.', type:'ticket', files:[], approval:null, review:null, history:[{date:'18.02.2026',time:'10:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'}] },
-  { id:'ticket_1004', number:'1004', subject:'Обновление ERP', service:'Сопровождение ERP', services:['Сопровождение ERP'], status:'done', statusLabel:'Завершено', responsible:'Кузнецов Д.Д.', hours:12, cost:36000, createdAt:'20.02.2026', updatedAt:'25.02.2026', urgency:'low', description:'Обновление ERP-системы до последней версии.', type:'ticket', files:[], approval:null, review:{rating:4,comment:'',closedAt:'25.02.2026'}, history:[{date:'20.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'25.02.2026',time:'16:00:00',author:'Кузнецов Д.Д.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1005', number:'1005', subject:'Консультация по лицензиям', service:'Аудит лицензий', services:['Аудит лицензий'], status:'done', statusLabel:'Завершено', responsible:'Смирнов С.С.', hours:4, cost:12000, createdAt:'25.02.2026', updatedAt:'28.02.2026', urgency:'low', description:'Консультация по лицензионному портфелю.', type:'ticket', files:[], approval:null, review:null, history:[{date:'25.02.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'28.02.2026',time:'15:00:00',author:'Смирнов С.С.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1006', number:'1006', subject:'Разработка модуля', service:'Реальная автоматизация', services:['Реальная автоматизация','Интеграция'], status:'pending_eval', statusLabel:'На оценке', responsible:'Орлов В.В.', hours:10, cost:30000, createdAt:'02.03.2026', updatedAt:'10.03.2026', urgency:'high', description:'Разработка нового модуля интеграции с внешней системой.', type:'ticket', files:[], approval:null, review:null, history:[{date:'02.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'05.03.2026',time:'10:00:00',author:'Орлов В.В.',field:'status',oldValue:'Новый',newValue:'В работе'},{date:'10.03.2026',time:'11:00:00',author:'Орлов В.В.',field:'status',oldValue:'В работе',newValue:'На оценке'}] },
-  { id:'ticket_1007', number:'1007', subject:'Ошибка в отчёте', service:'Сервисы ИТС', services:['Сервисы ИТС'], status:'done', statusLabel:'Завершено', responsible:'Федоров Н.Н.', hours:2, cost:6000, createdAt:'05.03.2026', updatedAt:'07.03.2026', urgency:'medium', description:'В отчёте неверно отображаются данные.', type:'ticket', files:[], approval:null, review:null, history:[{date:'05.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'07.03.2026',time:'14:00:00',author:'Федоров Н.Н.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1008', number:'1008', subject:'Переход на новую систему', service:'Переход с 1С:УПП', services:['Переход с 1С:УПП'], status:'progress', statusLabel:'В работе', responsible:'Алексеев К.К.', hours:8, cost:24000, createdAt:'10.03.2026', updatedAt:'15.03.2026', urgency:'high', description:'Переход с устаревшей системы.', type:'ticket', files:[], approval:null, review:null, history:[{date:'10.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'11.03.2026',time:'10:00:00',author:'Алексеев К.К.',field:'status',oldValue:'Новый',newValue:'В работе'}] },
-  { id:'ticket_1009', number:'1009', subject:'Настройка MES', service:'MES для производства', services:['MES для производства'], status:'new', statusLabel:'Новый', responsible:'Васильев Л.Л.', hours:0, cost:0, createdAt:'15.03.2026', updatedAt:'15.03.2026', urgency:'medium', description:'Настройка системы управления производством.', type:'ticket', files:[], approval:null, review:null, history:[{date:'15.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'}] },
-  { id:'ticket_1010', number:'1010', subject:'Подключение сервиса', service:'Сервисы ИТС', services:['Сервисы ИТС'], status:'done', statusLabel:'Завершено', responsible:'Павлов М.М.', hours:3, cost:9000, createdAt:'20.03.2026', updatedAt:'22.03.2026', urgency:'low', description:'Подключение сервисов ИТС-ПРОФ.', type:'ticket', files:[], approval:null, review:null, history:[{date:'20.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'22.03.2026',time:'15:00:00',author:'Павлов М.М.',field:'status',oldValue:'В работе',newValue:'Завершено'}] },
-  { id:'ticket_1011', number:'1011', subject:'Миграция данных', service:'Анализ и миграция', services:['Анализ и миграция'], status:'progress', statusLabel:'В работе', responsible:'Новиков А.С.', hours:14, cost:42000, createdAt:'22.03.2026', updatedAt:'25.03.2026', urgency:'high', description:'Перенос данных из старой системы.', type:'ticket', files:[], approval:null, review:null, history:[{date:'22.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'24.03.2026',time:'09:00:00',author:'Новиков А.С.',field:'status',oldValue:'Новый',newValue:'В работе'}] },
-  { id:'ticket_1012', number:'1012', subject:'Настройка прав доступа', service:'Администрирование', services:['Администрирование'], status:'cancelled', statusLabel:'Отменено', responsible:'Морозова Е.В.', hours:2, cost:4500, createdAt:'25.03.2026', updatedAt:'26.03.2026', urgency:'low', description:'Настройка ролей и прав пользователей.', type:'ticket', files:[], approval:null, review:null, history:[{date:'25.03.2026',time:'09:00:00',author:'Александрова А.А.',field:'status',oldValue:'',newValue:'Новый'},{date:'26.03.2026',time:'10:30:00',author:'Александрова А.А.',field:'status',oldValue:'Новый',newValue:'Отменено'}] }
-];
-
-var INITIAL_MESSAGES = { 'ticket_1002':[ {id:'msg_1',author:'client',name:'Александрова А.А.',text:'Добрый день! Помогите разобраться с ошибкой.',time:'09:14',date:'15.02.2026',isFirst:true}, {id:'msg_2',author:'staff',name:'Петров П.П.',text:'Принял в работу. Уточните, при каких действиях возникает ошибка?',time:'09:45',date:'15.02.2026'} ], 'ticket_1008':[ {id:'msg_1',author:'client',name:'Александрова А.А.',text:'Добрый день! С чего начать переход с 1С:УПП?',time:'11:58',date:'10.03.2026',isFirst:true}, {id:'msg_2',author:'staff',name:'Алексеев К.К.',text:'Начнём с аудита текущих доработок.',time:'12:10',date:'10.03.2026'} ] };
-
-function getTickets(){ try{ return JSON.parse(localStorage.getItem(TPPO_KEYS.tickets)||'null')||[]; }catch(e){ return []; } }
-function saveTickets(arr){ localStorage.setItem(TPPO_KEYS.tickets,JSON.stringify(arr)); }
-function saveMessages(id,arr){ localStorage.setItem(TPPO_KEYS.msgs(id),JSON.stringify(arr)); }
-function initData(){ if(localStorage.getItem('tppo_v')===DATA_VERSION) return; localStorage.setItem('tppo_v',DATA_VERSION); saveTickets(INITIAL_TICKETS); Object.keys(INITIAL_MESSAGES).forEach(function(id){ saveMessages(id,INITIAL_MESSAGES[id]); }); localStorage.setItem(TPPO_KEYS.user,JSON.stringify({name:'Александра',fullName:'Александрова Александра Александровна',phone:'+7 999 123-45-67',email:'aleksandra@example.com'})); localStorage.setItem(TPPO_KEYS.settings,JSON.stringify({email:{newMessage:true,statusChange:true,newOffer:false,responsible:false},push:{newMessage:true,statusChange:false,newOffer:false,responsible:true}})); }
-
-function handleRoute(route){ var map={'dashboard':'Дашборд.html','my-tickets':'МоиОбращения.html','call-order':'ОбратныйЗвонок.html','settings':'Настройки.html'}; if(map[route]) window.location.href=map[route]; }
-
-// ---- Сайдбар
-var sidebar = document.getElementById('sidebar');
-var overlay = document.getElementById('overlay');
-
-function openSidebar() { if (window.innerWidth<=768){ sidebar.classList.add('active'); if(overlay) overlay.classList.add('active'); document.body.style.overflow='hidden'; } }
-function closeSidebar() { sidebar.classList.remove('active'); if(overlay) overlay.classList.remove('active'); document.body.style.overflow=''; }
-window.toggleSidebar = function() { sidebar.classList.contains('active') ? closeSidebar() : openSidebar(); };
-if (overlay) overlay.addEventListener('click', closeSidebar);
-
-var tx = 0;
-document.addEventListener('touchstart', function(e){ tx = e.changedTouches[0].clientX; });
-document.addEventListener('touchend', function(e){ var d = e.changedTouches[0].clientX - tx; if (window.innerWidth<=768){ if(d>70&&!sidebar.classList.contains('active')) openSidebar(); if(d<-70&&sidebar.classList.contains('active')) closeSidebar(); } });
-window.addEventListener('resize', function(){ if(window.innerWidth>768&&sidebar.classList.contains('active')){ sidebar.classList.remove('active'); if(overlay) overlay.classList.remove('active'); document.body.style.overflow=''; } });
-
-document.querySelectorAll('[data-route]').forEach(function(item){ item.addEventListener('click', function(e){ e.stopPropagation(); handleRoute(item.dataset.route); if(window.innerWidth<=768) setTimeout(closeSidebar,80); }); });
-
-var logoBtn = document.getElementById('logoDashboardBtn');
-if (logoBtn) logoBtn.addEventListener('click', function(){ window.location.href='Дашборд.html'; });
-
-// ---- Профиль и выход
-['#desktopProfileInfo','#mobileProfileClickable'].forEach(function(sel){ var el=document.querySelector(sel); if(el) el.addEventListener('click',function(){ window.location.href='Настройки.html'; }); });
-['#desktopLogoutBtn','#mobileLogoutBtn'].forEach(function(sel){ var el=document.querySelector(sel); if(el) el.addEventListener('click',function(){ window.location.href='ФормаВхода.html'; }); });
-
-// ---- Рендер таблицы
-function getStatusClass(status){
-  switch(status){
-    case 'done': return 'done';
-    case 'progress': return 'progress';
-    case 'pending_eval': return 'eval';
-    case 'on_approval': return 'approval';
-    case 'cancelled': return 'cancelled';
-    default: return 'new';
-  }
+// ---- Навигация
+function handleRoute(route){
+  var map={'dashboard':'Дашборд.html','my-tickets':'МоиОбращения.html','call-order':'ОбратныйЗвонок.html','settings':'Настройки.html'};
+  if(map[route]) window.location.href=map[route];
 }
 
-function renderTickets() {
-  var allTickets = getTickets();
-  var activeFilter = document.querySelector('.filter-chip.active')?.dataset.filter || 'all';
-  var searchTerm = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
-  
+// Marquee на hover
+function bindMarquee(el) {
+  if (!el || el._marqueeBound) return;
+  el._marqueeBound = true;
+  var inner = el.querySelector('.marquee-inner');
+  if (!inner) return;
+  el.addEventListener('mouseenter', function() {
+    el.classList.add('marquee-active');
+    requestAnimationFrame(function() {
+      var overflow = inner.scrollWidth - el.clientWidth;
+      if (overflow <= 4) { el.classList.remove('marquee-active'); return; }
+      var duration = Math.max(2, overflow / 40);
+      inner.style.transition = 'transform ' + duration + 's linear 0.2s';
+      requestAnimationFrame(function() {
+        inner.style.transform = 'translateX(-' + overflow + 'px)';
+      });
+    });
+  });
+  el.addEventListener('mouseleave', function() {
+    inner.style.transition = 'transform 0.3s ease';
+    inner.style.transform = 'translateX(0)';
+    setTimeout(function() { el.classList.remove('marquee-active'); }, 300);
+  });
+}
+function mc(text, wide) {
+  return '<span class="marquee-cell' + (wide ? ' wide' : '') +
+         '"><span class="marquee-inner">' + escHtml(text) + '</span></span>';
+}
+
+var sidebar = document.getElementById('sidebar');
+var overlay  = document.getElementById('overlay');
+
+function openSidebar()  { if(window.innerWidth<=768){ sidebar.classList.add('active'); if(overlay) overlay.classList.add('active'); document.body.style.overflow='hidden'; } }
+function closeSidebar() { sidebar.classList.remove('active'); if(overlay) overlay.classList.remove('active'); document.body.style.overflow=''; }
+window.toggleSidebar = function(){ sidebar.classList.contains('active') ? closeSidebar() : openSidebar(); };
+if(overlay) overlay.addEventListener('click', closeSidebar);
+
+var tx=0;
+document.addEventListener('touchstart', function(e){ tx=e.changedTouches[0].clientX; });
+document.addEventListener('touchend',   function(e){ var d=e.changedTouches[0].clientX-tx; if(window.innerWidth<=768){ if(d>70&&!sidebar.classList.contains('active')) openSidebar(); if(d<-70&&sidebar.classList.contains('active')) closeSidebar(); } });
+window.addEventListener('resize', function(){ if(window.innerWidth>768&&sidebar.classList.contains('active')){ sidebar.classList.remove('active'); if(overlay) overlay.classList.remove('active'); document.body.style.overflow=''; } });
+
+document.querySelectorAll('[data-route]').forEach(function(item){
+  item.addEventListener('click', function(e){ e.stopPropagation(); handleRoute(item.dataset.route); if(window.innerWidth<=768) setTimeout(closeSidebar,80); });
+});
+var logoBtn = document.getElementById('logoDashboardBtn');
+if(logoBtn) logoBtn.addEventListener('click', function(){ window.location.href='Дашборд.html'; });
+
+['#desktopProfileInfo','#mobileProfileClickable'].forEach(function(sel){ var el=document.querySelector(sel); if(el) el.addEventListener('click',function(){ window.location.href='Настройки.html'; }); });
+
+['#desktopLogoutBtn','#mobileLogoutBtn'].forEach(function(sel){
+  var el=document.querySelector(sel);
+  if(el) el.addEventListener('click', async function(){
+    await TPPO.logout();
+    window.location.href='ФормаВхода.html';
+  });
+});
+
+// ---- Рендер таблицы обращений
+
+var allTickets = [];
+
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function getStatusCss(status){
+  return TPPO.STATUS_CSS[status] || 'new';
+}
+
+function renderTickets(){
+  var activeFilter = document.querySelector('.filter-chip.active');
+  activeFilter = activeFilter ? (activeFilter.dataset.filter || 'all') : 'all';
+  var searchInput = document.getElementById('searchInput');
+  var searchTerm  = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  // Обычные обращения (без callback)
   var filtered = allTickets.filter(function(t){ return t.type !== 'callback'; });
-  if(activeFilter !== 'all') filtered = filtered.filter(function(t){ return t.status === activeFilter; });
-  if(searchTerm) filtered = filtered.filter(function(t){ return t.subject.toLowerCase().includes(searchTerm) || t.service.toLowerCase().includes(searchTerm) || t.number.includes(searchTerm) || (t.responsible||'').toLowerCase().includes(searchTerm); });
-  
+  if(activeFilter !== 'all'){
+    var filterMap = { 'progress': 'in_progress' };
+    var statusCode = filterMap[activeFilter] || activeFilter;
+    filtered = filtered.filter(function(t){ return t.status === statusCode; });
+  }
+  if(searchTerm) filtered = filtered.filter(function(t){
+    return (t.subject||'').toLowerCase().includes(searchTerm) ||
+           (t.service||'').toLowerCase().includes(searchTerm) ||
+           (t.number||'').toLowerCase().includes(searchTerm)  ||
+           (t.responsible||'').toLowerCase().includes(searchTerm);
+  });
+
   var countSpan = document.getElementById('ticketsCountInfo');
-  if(countSpan) countSpan.textContent = 'Всего обращений: ' + filtered.length;
-  
+  if(countSpan) countSpan.textContent = 'Всего обращений: '+filtered.length;
+
   var tbody = document.getElementById('tableBody');
   if(!tbody) return;
-  tbody.innerHTML = '';
-  
-  if(filtered.length === 0){
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td colspan="8" style="text-align:center;color:#999;padding:32px">Нет обращений с выбранными параметрами</td>';
+  tbody.innerHTML='';
+
+  if(filtered.length===0){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="8" style="text-align:center;color:#999;padding:32px">Нет обращений с выбранными параметрами</td>';
     tbody.appendChild(tr);
+  } else {
+    filtered.forEach(function(t){
+      var tr=document.createElement('tr');
+      tr.dataset.id=t.id;
+      var svcLabel=(t.services&&t.services.length>1)?t.services[0]+' +'+(t.services.length-1):(t.service||'—');
+      var costDisplay = (t.cost && typeof t.cost==='number' && t.cost > 0) ? t.cost.toLocaleString('ru-RU') : '—';
+      var hoursDisplay = (t.hours && t.hours > 0) ? String(t.hours) : '—';
+      tr.innerHTML='<td>'+mc(t.number)+'</td>'+
+        '<td><span class="date-chip">'+escHtml(t.createdAt)+'</span></td>'+
+        '<td>'+mc(t.subject, true)+'</td>'+
+        '<td>'+mc(svcLabel)+'</td>'+
+        '<td><span class="status-badge '+getStatusCss(t.status)+'">'+escHtml(t.statusLabel)+'</span></td>'+
+        '<td>'+mc(t.responsible||'—')+'</td>'+
+        '<td>'+hoursDisplay+'</td>'+
+        '<td>'+costDisplay+'</td>';
+      tr.addEventListener('click', function(){
+        if (!t.id) { console.error('[МоиОбращения] клик по тикету без id:', t); return; }
+        sessionStorage.setItem('currentTicketId', t.id);
+        window.location.href='ДеталиОбращения.html?id='+encodeURIComponent(t.id);
+      });
+      tbody.appendChild(tr);
+      tr.querySelectorAll('.marquee-cell').forEach(bindMarquee);
+    });
+  }
+
+  // Звонки (callback)
+  renderCallbacks();
+}
+
+function renderCallbacks(){
+  var callbacks = allTickets.filter(function(t){ return t.type === 'callback'; });
+  var section = document.getElementById('callbackSection');
+  if(!section) return;
+
+  if(!callbacks.length){
+    section.style.display='none';
     return;
   }
-  
-  filtered.forEach(function(t){
-    var tr = document.createElement('tr');
-    tr.dataset.id = t.id;
-    var svcLabel = (t.services && t.services.length > 1) ? t.services[0]+' +' + (t.services.length-1) : (t.service||'—');
-    tr.innerHTML = '<td>'+t.number+'</td><td><span class="date-chip">'+t.createdAt+'</span></td><td>'+t.subject+'</td><td>'+svcLabel+'</td><td><span class="status-badge '+getStatusClass(t.status)+'">'+t.statusLabel+'</span></td><td>'+(t.responsible||'—')+'</td><td>'+t.hours+'</td><td>'+t.cost.toLocaleString('ru-RU')+'</td>';
-    tr.addEventListener('click',function(){ window.location.href='ДеталиОбращения.html?id='+t.id; });
+  section.style.display='block';
+
+  var tbody = document.querySelector('#callbackTable tbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  callbacks.forEach(function(t){
+    var tr=document.createElement('tr');
+    tr.dataset.id=t.id;
+    tr.style.cursor='default';
+    tr.innerHTML='<td>'+mc(t.number)+'</td>'+
+      '<td><span class="date-chip">'+escHtml(t.createdAt)+'</span></td>'+
+      '<td>'+mc(t.subject, true)+'</td>'+
+      '<td><span class="status-badge '+getStatusCss(t.status)+'">'+escHtml(t.statusLabel)+'</span></td>';
+    // Callback некликабелен (нет деталей)
     tbody.appendChild(tr);
+    tr.querySelectorAll('.marquee-cell').forEach(bindMarquee);
   });
 }
 
-function renderCallbacks() {
-  var allTickets = getTickets();
-  var callbacks = allTickets.filter(function(t){ return t.type === 'callback'; });
-  var cbSection = document.getElementById('callbackSection');
-  if(callbacks.length > 0 && cbSection){
-    cbSection.style.display = 'block';
-    var cbTbody = document.querySelector('#callbackTable tbody');
-    if(cbTbody){
-      cbTbody.innerHTML = '';
-      callbacks.forEach(function(t){
-        var tr = document.createElement('tr');
-        tr.innerHTML = '<td>'+t.number+'</td><td><span class="date-chip">'+t.createdAt+'</span></td><td>'+t.subject+'</td><td><span class="status-badge '+getStatusClass(t.status)+'">'+t.statusLabel+'</span></td>';
-        tr.style.cursor = 'pointer';
-        tr.addEventListener('click',function(){ window.location.href='ДеталиОбращения.html?id='+t.id; });
-        cbTbody.appendChild(tr);
-      });
-    }
-  } else if(cbSection){
-    cbSection.style.display = 'none';
-  }
+function showLoading(){
+  var tbody=document.getElementById('tableBody');
+  if(tbody) tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#999;padding:32px">Загрузка...</td></tr>';
 }
 
-// ---- Инициализация
-initData();
-renderTickets();
-renderCallbacks();
+function showError(msg){
+  var tbody=document.getElementById('tableBody');
+  if(tbody) tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#c00;padding:32px">'+escHtml(msg)+'</td></tr>';
+}
 
-// Фильтры
+// ---- Загрузка с сервера
+async function loadTickets(){
+  showLoading();
+  try {
+    allTickets = await TPPO.getTickets();
+  } catch(e) {
+    showError('Не удалось загрузить обращения: '+e.message);
+    return;
+  }
+  renderTickets();
+}
+
+loadTickets();
+
+// ---- Фильтры
 document.querySelectorAll('.filter-chip').forEach(function(chip){
   chip.addEventListener('click',function(){
     document.querySelectorAll('.filter-chip').forEach(function(c){ c.classList.remove('active'); });
@@ -1080,14 +1155,12 @@ document.querySelectorAll('.filter-chip').forEach(function(chip){
   });
 });
 
-// Поиск
-var searchInput = document.getElementById('searchInput');
-if(searchInput){
-  searchInput.addEventListener('input', function(){ renderTickets(); });
-}
+// ---- Поиск
+var searchInput=document.getElementById('searchInput');
+if(searchInput) searchInput.addEventListener('input', function(){ renderTickets(); });
 
-// Кнопка создания обращения
-var createBtn = document.getElementById('createTicketFullBtn');
+// ---- Кнопка создания обращения
+var createBtn=document.getElementById('createTicketFullBtn');
 if(createBtn) createBtn.addEventListener('click', function(){ window.location.href='НовоеОбращение.html'; });
 </script>
 </body>

@@ -922,7 +922,7 @@
         </svg>
         <span class="tooltip">Профиль</span>
       </div>
-      <div class="profile-name" id="profileName">Александра</div>
+      <div class="profile-name" id="profileName">...</div>
       <div class="icon-btn" id="logoutBtn">
         <svg viewBox="0 0 24 24">
           <path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h6v2H4c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h6v2H4v14z"/>
@@ -1058,9 +1058,9 @@
         <div class="row">
           <label>Срочность:</label>
           <div class="priority-group">
-            <div class="priority" data-priority="low"><i class="fa-regular fa-clock"></i>Низкая</div>
-            <div class="priority" data-priority="medium"><i class="fa-regular fa-clock"></i>Средняя</div>
-            <div class="priority active" data-priority="high"><i class="fa-solid fa-bolt"></i>Высокая</div>
+            <div class="priority" data-priority="low"><i class="fa-regular fa-clock"></i><span>Низкая</span></div>
+            <div class="priority" data-priority="medium"><i class="fa-regular fa-clock"></i><span>Средняя</span></div>
+            <div class="priority active" data-priority="high"><i class="fa-solid fa-bolt"></i><span>Высокая</span></div>
           </div>
         </div>
 
@@ -1118,9 +1118,9 @@
   <!-- RIGHT COLUMN (desktop) -->
   <aside class="chat-card">
     <div class="chat-tabs">
-      <div class="tab active" data-tab="chat"><i class="fa-solid fa-comment-dots"></i>Чат</div>
-      <div class="tab" data-tab="history"><i class="fa-solid fa-clock-rotate-left"></i>История</div>
-      <div class="tab" data-tab="approval"><i class="fa-solid fa-circle-check"></i>Согласование</div>
+      <div class="tab active" data-tab="chat"><i class="fa-solid fa-comment-dots"></i><span>Чат</span></div>
+      <div class="tab" data-tab="history"><i class="fa-solid fa-clock-rotate-left"></i><span>История</span></div>
+      <div class="tab" data-tab="approval"><i class="fa-solid fa-circle-check"></i><span>Согласование</span></div>
     </div>
 
     <div class="tab-content active" id="chatContent">
@@ -1159,346 +1159,496 @@
   </aside>
 </main>
 
+<script src="api.js"></script>
 <script>
-  // ===== DATA HELPERS =====
-  var TPPO_KEYS = { tickets:'tppo_tickets', msgs:function(id){return 'tppo_msgs_'+id;}, user:'tppo_user' };
-  function getTickets(){ try{ return JSON.parse(localStorage.getItem(TPPO_KEYS.tickets)||'null')||[]; }catch(e){ return []; } }
-  function saveTickets(arr){ localStorage.setItem(TPPO_KEYS.tickets,JSON.stringify(arr)); }
-  function getMsgs(id){ try{ return JSON.parse(localStorage.getItem(TPPO_KEYS.msgs(id))||'null')||[]; }catch(e){ return []; } }
-  function saveMsgs(id,arr){ localStorage.setItem(TPPO_KEYS.msgs(id),JSON.stringify(arr)); }
-
-  function showToast(msg){ var t=document.getElementById('appToast'); if(!t){t=document.createElement('div');t.id='appToast';t.style.cssText='position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';document.body.appendChild(t);} t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2800); }
-  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function formatSize(b){ if(b<1024)return b+' Б'; if(b<1048576)return (b/1024).toFixed(1)+' КБ'; return (b/1048576).toFixed(1)+' МБ'; }
-  function nowDateStr(){ var d=new Date(); return d.getDate().toString().padStart(2,'0')+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear(); }
-  function nowTimeStr(){ var d=new Date(); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0'); }
-
-  // ===== URL PARAMS & TICKET LOADING =====
-  var urlParams = new URLSearchParams(window.location.search);
-  var ticketId = urlParams.get('id');
-  if(!ticketId){ window.location.href='МоиОбращения.html'; }
-
-  var currentTicket = null;
-  var tickets = getTickets();
-  for(var i=0;i<tickets.length;i++){ if(tickets[i].id===ticketId){ currentTicket=tickets[i]; break; } }
-  if(!currentTicket){ window.location.href='МоиОбращения.html'; }
-
-  function statusCssClass(s){
-    switch(s){
-      case 'done': return 'color:#2e7d32;background:#e8f4e6';
-      case 'progress': return 'color:#ef6c00;background:#fff3df';
-      case 'pending_eval': return 'color:#7b1fa2;background:#f3e5f5';
-      case 'on_approval': return 'color:#0d47a1;background:#e3f2fd';
-      case 'cancelled': return 'color:#616161;background:#f5f5f5';
-      default: return 'color:#1565c0;background:#e8f1ff';
+  // ===== UTILITIES =====
+  function showToast(msg) {
+    var t = document.getElementById('appToast');
+    if (!t) {
+      t = document.createElement('div'); t.id = 'appToast';
+      t.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,0.88);color:#fff;padding:12px 28px;border-radius:12px;font-size:15px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;font-family:Inter,sans-serif;white-space:nowrap;';
+      document.body.appendChild(t);
     }
+    t.textContent = msg; t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(t._t);
+    t._t = setTimeout(function() { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(20px)'; }, 2800);
+  }
+  function escapeHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function formatSize(b) { if (b < 1024) return b + ' Б'; if (b < 1048576) return (b/1024).toFixed(1) + ' КБ'; return (b/1048576).toFixed(1) + ' МБ'; }
+
+  // ===== STATE =====
+  // ID берём из URL (?id=...), fallback в sessionStorage — некоторые dev-серверы
+  // (Live Server и т.п.) обрезают query string при URL rewriting
+  var urlParams = new URLSearchParams(window.location.search);
+  var ticketId  = urlParams.get('id');
+  if (!ticketId || ticketId === 'null' || ticketId === 'undefined') {
+    ticketId = sessionStorage.getItem('currentTicketId');
+  }
+  var ticketIdInvalid = (!ticketId || ticketId === 'null' || ticketId === 'undefined' || ticketId === '');
+
+  var currentTicket = null;   // mapped ticket (from TPPO.mapTicket)
+  var ticketFiles   = [];     // UI-only attached files array
+
+  // ===== USER NAME =====
+  (function initUser() {
+    var nameEl = document.getElementById('profileName');
+    if (nameEl) nameEl.textContent = TPPO.Auth.getDisplayName();
+    TPPO.getProfile().then(function() {
+      if (nameEl) nameEl.textContent = TPPO.Auth.getDisplayName();
+    }).catch(function(){});
+  })();
+
+  // ===== STATUS CSS =====
+  function statusCssClass(s) {
+    var map = {
+      done:           'color:#2e7d32;background:#e8f4e6',
+      in_progress:    'color:#ef6c00;background:#fff3df',
+      pending_eval:   'color:#7b1fa2;background:#f3e5f5',
+      on_approval:    'color:#0d47a1;background:#e3f2fd',
+      pending_client: 'color:#ef6c00;background:#fff3df',
+      cancelled:      'color:#616161;background:#f5f5f5',
+    };
+    return map[s] || 'color:#1565c0;background:#e8f1ff';
   }
 
-  function populateTicket(t){
-    var statusEl=document.querySelector('.ticket-header .status');
-    if(statusEl){ statusEl.textContent='Статус: '+t.statusLabel; statusEl.style.cssText='display:inline-block;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:700;'+statusCssClass(t.status); }
-    var titleEl=document.querySelector('.ticket-header .ticket-title');
-    if(titleEl) titleEl.textContent='Обращение № '+t.number;
-    var datesEl=document.querySelector('.dates');
-    if(datesEl) datesEl.innerHTML='Дата создания: '+t.createdAt+'<br>Дата последнего изменения: '+t.updatedAt;
-    var subjectInput=document.querySelector('.form-block .input');
-    if(subjectInput) subjectInput.value=t.subject;
-    var textarea=document.querySelector('.form-block .textarea');
-    if(textarea) textarea.value=t.description||'';
-    // Услуга
-    var sel=document.querySelector('.form-block .select');
-    if(sel && t.service){ for(var i=0;i<sel.options.length;i++){ if(sel.options[i].text.toLowerCase().indexOf(t.service.toLowerCase())!==-1){ sel.selectedIndex=i; break; } } }
-    // Приоритет
-    document.querySelectorAll('.priority').forEach(function(b){ b.classList.remove('active'); if(b.dataset.priority===t.urgency) b.classList.add('active'); });
-    // Кнопка подтверждения выполнения
-    var closeBtn = document.getElementById('closeTicketBtn');
-    if(closeBtn){
-      if(t.status==='done' && !t.review){ closeBtn.style.display='block'; }
-      else { closeBtn.style.display='none'; }
+  // ===== POPULATE FORM =====
+  function populateTicket(t) {
+    document.title = 'Обращение №' + t.number + ' — Неосистемы Северо-Запад';
+    // Correct selectors (no .ticket-header wrapper)
+    var statusEl = document.querySelector('.status');
+    if (statusEl) {
+      statusEl.textContent = 'Статус: ' + t.statusLabel;
+      statusEl.style.cssText = 'display:inline-block;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:700;' + statusCssClass(t.status);
     }
-    // Файлы
+    var titleEl = document.querySelector('.ticket-title');
+    if (titleEl) titleEl.textContent = 'Обращение № ' + t.number;
+    var datesEl = document.querySelector('.dates');
+    if (datesEl) datesEl.innerHTML = 'Дата создания: ' + t.createdAt + '<br>Дата последнего изменения: ' + t.updatedAt;
+    var subjectInput = document.querySelector('.form-block .input');
+    if (subjectInput) subjectInput.value = t.subject;
+    var textarea = document.querySelector('.form-block .textarea');
+    if (textarea) textarea.value = t.description || '';
+    // Priority
+    document.querySelectorAll('.priority').forEach(function(b) {
+      b.classList.remove('active');
+      if (b.dataset.priority === t.urgency) b.classList.add('active');
+    });
+    // Close/confirm button
+    var closeBtn = document.getElementById('closeTicketBtn');
+    if (closeBtn) closeBtn.style.display = (t.status === 'done' && !t.review) ? 'block' : 'none';
     renderTicketFiles();
   }
-  populateTicket(currentTicket);
+
+  // ===== SERVICES SELECT =====
+  async function loadServices() {
+    try {
+      var services = await TPPO.getServices();
+      var sel = document.querySelector('.form-block .select');
+      if (!sel || !services || !services.length) return;
+      sel.innerHTML = services.map(function(s) {
+        var name = escapeHtml(s.name || s.code || '');
+        return '<option value="' + name + '">' + name + '</option>';
+      }).join('');
+      // Pre-select current service
+      if (currentTicket && currentTicket.service) {
+        for (var i = 0; i < sel.options.length; i++) {
+          if (sel.options[i].value === currentTicket.service) { sel.selectedIndex = i; break; }
+        }
+      }
+    } catch(e) { /* keep hardcoded */ }
+  }
 
   // ===== HISTORY =====
-  function addHistoryEntry(field, oldVal, newVal){
-    if(!currentTicket.history) currentTicket.history=[];
-    currentTicket.history.push({date:nowDateStr(),time:nowTimeStr(),author:'Александрова А.А.',field:field,oldValue:oldVal||'',newValue:newVal||''});
+  function renderHistoryTo(container, history) {
+    if (!container) return;
+    if (!history || !history.length) {
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:#999;font-size:14px">История изменений пуста</div>';
+      return;
+    }
+    container.innerHTML = '';
+    history.forEach(function(e) {
+      var div = document.createElement('div'); div.className = 'history-item';
+      var changedAt = TPPO.formatDate(e.changed_at || e.changedAt || '');
+      var author   = e.changed_by || e.author || '—';
+      var field    = e.field_name || e.field || '';
+      var oldVal   = e.old_value  || e.oldValue  || '';
+      var newVal   = e.new_value  || e.newValue  || '';
+      var txt = escapeHtml(changedAt) + '<br><strong>' + escapeHtml(author) + '</strong><br>';
+      if (field === 'status_code' || field === 'status') {
+        var ol = TPPO.STATUS_LABELS[oldVal] || oldVal;
+        var nl = TPPO.STATUS_LABELS[newVal] || newVal;
+        txt += '<div class="history-status">Статус: ' + (ol ? escapeHtml(ol) + ' → ' : '') + escapeHtml(nl) + '</div>';
+      } else {
+        txt += escapeHtml(field) + ': ' + (oldVal ? escapeHtml(oldVal) + ' → ' : '') + escapeHtml(newVal);
+      }
+      div.innerHTML = txt;
+      container.appendChild(div);
+    });
+    container.scrollTop = container.scrollHeight;
   }
 
-  function renderHistory(){
-    var list=document.getElementById('historyList');
-    if(!list) return;
-    var history=currentTicket.history||[];
-    if(history.length===0){ list.innerHTML='<div style="padding:20px;text-align:center;color:#999;font-size:14px">История изменений пуста</div>'; return; }
-    list.innerHTML='';
-    history.forEach(function(e){
-      var div=document.createElement('div');
-      div.className='history-item';
-      var txt=escapeHtml(e.date)+' '+escapeHtml(e.time)+'<br><strong>'+escapeHtml(e.author)+'</strong><br>';
-      if(e.field==='status'){
-        txt+='<div class="history-status">Статус: '+(e.oldValue?escapeHtml(e.oldValue)+' → ':'')+escapeHtml(e.newValue)+'</div>';
-      } else {
-        txt+=escapeHtml(e.field)+': '+(e.oldValue?escapeHtml(e.oldValue)+' → ':'')+escapeHtml(e.newValue);
-      }
-      div.innerHTML=txt;
-      list.appendChild(div);
-    });
-    list.scrollTop=list.scrollHeight;
+  async function loadHistory() {
+    var desktop = document.getElementById('historyList');
+    var mobile  = document.querySelector('#mobileHistoryItem .chat-body');
+    var loading = '<div style="padding:20px;text-align:center;color:#999;font-size:14px">Загрузка...</div>';
+    if (desktop) desktop.innerHTML = loading;
+    if (mobile)  mobile.innerHTML  = loading;
+    try {
+      var history = await TPPO.getTicketHistory(ticketId);
+      renderHistoryTo(desktop, history || []);
+      renderHistoryTo(mobile,  history || []);
+    } catch(e) {
+      var err = '<div style="padding:20px;text-align:center;color:#999;font-size:14px">Не удалось загрузить историю</div>';
+      if (desktop) desktop.innerHTML = err;
+      if (mobile)  mobile.innerHTML  = err;
+    }
   }
-  renderHistory();
 
   // ===== APPROVAL =====
-  function renderApproval(){
-    var container=document.getElementById('approvalContainer');
-    if(!container) return;
-    var ap=currentTicket.approval;
-    if(!ap){ container.innerHTML='<div style="padding:20px;text-align:center;color:#999;font-size:14px">Коммерческое предложение не выставлено</div>'; return; }
-    container.innerHTML='';
-    var fields=[
-      ['Договор', ap.contract||'—'],
-      ['Ставка', ap.rate ? ap.rate.toLocaleString('ru-RU')+' р./час' : '—'],
-      ['Планируемые часы', ap.hours ? ap.hours+' ч.' : '—'],
-      ['Размер скидки', ap.discount ? ap.discount+'%' : '0%'],
-      ['Сумма оплаты', ap.cost ? ap.cost.toLocaleString('ru-RU')+' р.' : '—'],
-      ['Плановая дата', ap.deadline||'—'],
-      ['Дата передачи', ap.proposedAt||'—'],
-      ['Ожидаемый эффект', ap.effect||'—']
+  function renderApprovalTo(container, ap) {
+    if (!container) return;
+    if (!ap) {
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:#999;font-size:14px">Коммерческое предложение не выставлено</div>';
+      return;
+    }
+    container.innerHTML = '';
+    var fields = [
+      ['Договор',                  ap.contract  || '—'],
+      ['Ставка',                   ap.rate   ? ap.rate.toLocaleString('ru-RU')  + ' р./час' : '—'],
+      ['Планируемые часы',         ap.hours  ? ap.hours  + ' ч.'  : '—'],
+      ['Размер скидки',            ap.discount ? ap.discount + '%' : '0%'],
+      ['Сумма оплаты',             ap.cost   ? ap.cost.toLocaleString('ru-RU')  + ' р.'    : '—'],
+      ['Плановая дата выполнения', ap.deadline  || '—'],
+      ['Дата передачи на проверку',ap.proposedAt|| '—'],
+      ['Ожидаемый эффект',         ap.effect    || '—'],
     ];
-    fields.forEach(function(f){
-      var d=document.createElement('div'); d.className='approval-item';
-      d.innerHTML='<div class="approval-label">'+escapeHtml(f[0])+'</div><div class="approval-value">'+escapeHtml(f[1])+'</div>';
+    fields.forEach(function(f) {
+      var d = document.createElement('div'); d.className = 'approval-item';
+      d.innerHTML = '<div class="approval-label">' + escapeHtml(f[0]) + '</div><div class="approval-value">' + escapeHtml(f[1]) + '</div>';
       container.appendChild(d);
     });
-    if(ap.status==='approved'){
-      var badge=document.createElement('div'); badge.style.cssText='padding:12px 14px';
-      badge.innerHTML='<span style="background:#e8f4e6;color:#2e7d32;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700">✓ Согласовано</span>';
-      container.appendChild(badge);
-    } else if(ap.status==='rejected'){
-      var badge=document.createElement('div'); badge.style.cssText='padding:12px 14px';
-      badge.innerHTML='<span style="background:#fde8e8;color:#c62828;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700">✗ Отклонено клиентом</span>';
-      container.appendChild(badge);
+    if (ap.status === 'approved') {
+      var b = document.createElement('div'); b.style.cssText = 'padding:12px 14px';
+      b.innerHTML = '<span style="background:#e8f4e6;color:#2e7d32;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700">✓ Согласовано</span>';
+      container.appendChild(b);
+    } else if (ap.status === 'rejected') {
+      var b = document.createElement('div'); b.style.cssText = 'padding:12px 14px';
+      b.innerHTML = '<span style="background:#fde8e8;color:#c62828;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700">✗ Отклонено клиентом</span>';
+      container.appendChild(b);
     } else {
-      var btns=document.createElement('div'); btns.className='approval-actions';
-      btns.innerHTML='<button class="btn-approve" id="approveBtn">✓ Согласовать</button><button class="btn-reject" id="rejectBtn">✗ Отклонить</button>';
+      var btns = document.createElement('div'); btns.className = 'approval-actions';
+      btns.innerHTML = '<button class="btn-approve" id="approveBtn">✓ Согласовать</button><button class="btn-reject" id="rejectBtn">✗ Отклонить</button>';
       container.appendChild(btns);
-      document.getElementById('approveBtn').addEventListener('click',function(){
-        currentTicket.approval.status='approved';
-        addHistoryEntry('status','На согласовании','Согласовано клиентом');
-        saveCurrentTicket();
-        renderApproval(); renderHistory(); populateTicket(currentTicket);
-        showToast('Предложение согласовано');
+      document.getElementById('approveBtn').addEventListener('click', async function() {
+        try {
+          var newAp = Object.assign({}, currentTicket.approval, { status: 'approved' });
+          var res   = await TPPO.updateTicket(ticketId, { approval: newAp, version: currentTicket.version });
+          currentTicket = res.mapped;
+          renderApproval(); populateTicket(currentTicket); await loadHistory();
+          showToast('Предложение согласовано');
+        } catch(e) { showToast('Ошибка: ' + (e.message || 'не удалось согласовать')); }
       });
-      document.getElementById('rejectBtn').addEventListener('click',function(){
-        currentTicket.approval.status='rejected';
-        addHistoryEntry('status','На согласовании','Отклонено клиентом');
-        saveCurrentTicket();
-        renderApproval(); renderHistory(); populateTicket(currentTicket);
-        showToast('Предложение отклонено');
+      document.getElementById('rejectBtn').addEventListener('click', async function() {
+        try {
+          var newAp = Object.assign({}, currentTicket.approval, { status: 'rejected' });
+          var res   = await TPPO.updateTicket(ticketId, { approval: newAp, version: currentTicket.version });
+          currentTicket = res.mapped;
+          renderApproval(); populateTicket(currentTicket); await loadHistory();
+          showToast('Предложение отклонено');
+        } catch(e) { showToast('Ошибка: ' + (e.message || 'не удалось отклонить')); }
       });
     }
   }
-  renderApproval();
 
-  // ===== SAVE & HELPERS =====
-  function saveCurrentTicket(){
-    currentTicket.updatedAt=nowDateStr();
-    var all=getTickets();
-    var idx=all.findIndex(function(t){return t.id===ticketId;});
-    if(idx>=0){all[idx]=currentTicket;} else {all.push(currentTicket);}
-    saveTickets(all);
+  function renderApproval() {
+    var ap = currentTicket && currentTicket.approval;
+    renderApprovalTo(document.getElementById('approvalContainer'), ap);
+    renderApprovalTo(document.querySelector('#mobileApprovalItem .chat-body'), ap);
   }
 
   // ===== FILE UPLOAD (ticket form) =====
-  var ticketFiles = currentTicket.files ? currentTicket.files.slice() : [];
-
-  function renderTicketFiles(){
-    var list=document.getElementById('ticketFileList');
-    if(!list) return;
-    if(ticketFiles.length===0){list.innerHTML='';return;}
-    list.innerHTML=ticketFiles.map(function(f,i){
-      return '<div class="file-tag"><i class="fa-solid fa-paperclip" style="color:#ff8244"></i><span>'+escapeHtml(f.name)+'</span><span style="color:#aaa;font-size:12px">('+formatSize(f.size)+')</span><span class="rm" data-ri="'+i+'"><i class="fa-solid fa-xmark"></i></span></div>';
+  function renderTicketFiles() {
+    var list = document.getElementById('ticketFileList');
+    if (!list) return;
+    if (!ticketFiles.length) { list.innerHTML = ''; return; }
+    list.innerHTML = ticketFiles.map(function(f, i) {
+      return '<div class="file-tag"><i class="fa-solid fa-paperclip" style="color:#ff8244"></i><span>' + escapeHtml(f.name) + '</span>' +
+        '<span style="color:#aaa;font-size:12px">(' + formatSize(f.size) + ')</span>' +
+        '<span class="rm" data-ri="' + i + '"><i class="fa-solid fa-xmark"></i></span></div>';
     }).join('');
-    list.querySelectorAll('.rm').forEach(function(btn){
-      btn.addEventListener('click',function(){ ticketFiles.splice(parseInt(btn.dataset.ri),1); renderTicketFiles(); });
+    list.querySelectorAll('.rm').forEach(function(btn) {
+      btn.addEventListener('click', function() { ticketFiles.splice(parseInt(btn.dataset.ri), 1); renderTicketFiles(); });
     });
   }
 
-  var ticketFileInput=document.getElementById('ticketFileInput');
-  document.getElementById('attachBtn')?.addEventListener('click',function(e){ e.preventDefault(); ticketFileInput?.click(); });
-  ticketFileInput?.addEventListener('change',function(){
-    Array.from(ticketFileInput.files).forEach(function(f){
-      if(f.size>10*1024*1024){showToast('Файл '+f.name+' превышает 10 МБ');return;}
-      ticketFiles.push({name:f.name,size:f.size,type:f.type});
-      showToast('Файл прикреплён: '+f.name);
+  var ticketFileInput = document.getElementById('ticketFileInput');
+  document.getElementById('attachBtn')?.addEventListener('click', function(e) { e.preventDefault(); ticketFileInput?.click(); });
+  ticketFileInput?.addEventListener('change', function() {
+    Array.from(ticketFileInput.files).forEach(function(f) {
+      if (f.size > 10 * 1024 * 1024) { showToast('Файл ' + f.name + ' превышает 10 МБ'); return; }
+      ticketFiles.push({ name: f.name, size: f.size, type: f.type });
+      showToast('Файл прикреплён: ' + f.name);
     });
-    ticketFileInput.value='';
+    ticketFileInput.value = '';
     renderTicketFiles();
   });
 
-  // ===== CHAT RENDERING =====
-  function renderMsg(msg){
-    var d=document.createElement('div');
-    d.className='message '+(msg.author==='client'?'out':'in');
-    var isFirst = msg.isFirst ? ' style="font-style:italic;border-left:3px solid rgba(255,130,68,0.4);padding-left:10px"' : '';
-    d.innerHTML='<div'+isFirst+'>'+escapeHtml(msg.text)+'</div><div class="message-time">'+msg.time+'</div>';
+  // ===== CHAT MESSAGES =====
+  function renderMsg(msg) {
+    var d = document.createElement('div');
+    var userId = TPPO.Auth.getUser() && TPPO.Auth.getUser().id;
+    var isOut  = (msg.author_id && msg.author_id === userId) || msg.author === 'client';
+    d.className = 'message ' + (isOut ? 'out' : 'in');
+    var nameHtml = (!isOut && (msg.author_name || msg.name))
+      ? '<div class="message-name">' + escapeHtml(msg.author_name || msg.name) + '</div>' : '';
+    var isFirst  = msg.is_first || msg.isFirst;
+    var textHtml = isFirst
+      ? '<div style="font-style:italic;border-left:3px solid rgba(255,130,68,0.4);padding-left:10px">' + escapeHtml(msg.text || '') + '</div>'
+      : escapeHtml(msg.text || '');
+    var timeStr = msg.sent_at
+      ? new Date(msg.sent_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+      : (msg.time || '');
+    d.innerHTML = nameHtml + textHtml + '<div class="message-time">' + timeStr + '</div>';
     return d;
   }
 
-  function loadMessages(){
-    var msgs=getMsgs(ticketId);
-    // Авто первое сообщение = описание обращения
-    if(msgs.length===0 && currentTicket.description){
-      var autoMsg={id:'msg_auto_1',author:'client',name:'Александрова А.А.',text:currentTicket.description,time:'09:00',date:currentTicket.createdAt,isFirst:true};
-      msgs=[autoMsg];
-      saveMsgs(ticketId,msgs);
+  function fillChatBody(body, msgs) {
+    if (!body) return;
+    body.innerHTML = '';
+    if (!msgs || !msgs.length) {
+      body.innerHTML = '<div style="padding:20px;text-align:center;color:#999;font-size:14px">Сообщений пока нет</div>';
+      return;
     }
-    var desktopBody=document.querySelector('#chatContent .chat-body');
-    var mobileBody=document.querySelector('#mobileChatItem .chat-body');
-    if(desktopBody){desktopBody.innerHTML='';msgs.forEach(function(m){desktopBody.appendChild(renderMsg(m));});desktopBody.scrollTop=desktopBody.scrollHeight;}
-    if(mobileBody){mobileBody.innerHTML='';msgs.forEach(function(m){mobileBody.appendChild(renderMsg(m));});mobileBody.scrollTop=mobileBody.scrollHeight;}
+    msgs.forEach(function(m) { body.appendChild(renderMsg(m)); });
+    body.scrollTop = body.scrollHeight;
   }
-  loadMessages();
 
-  // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (desktop) =====
-  const tabs = document.querySelectorAll('.chat-card .tab');
-  const tabContents = document.querySelectorAll('.chat-card .tab-content');
+  async function loadMessages() {
+    var desktopBody = document.querySelector('#chatContent .chat-body');
+    var mobileBody  = document.querySelector('#mobileChatItem .chat-body');
+    try {
+      var msgs = await TPPO.getMessages(ticketId);
+      fillChatBody(desktopBody, msgs);
+      fillChatBody(mobileBody,  msgs);
+    } catch(e) {
+      var err = '<div style="padding:20px;text-align:center;color:#999;font-size:14px">Не удалось загрузить сообщения</div>';
+      if (desktopBody) desktopBody.innerHTML = err;
+      if (mobileBody)  mobileBody.innerHTML  = err;
+    }
+  }
+
+  async function sendMessage(text) {
+    if (!text) return;
+    try {
+      await TPPO.sendMessage(ticketId, text);
+      await loadMessages();          // reload to stay in sync
+    } catch(e) {
+      showToast('Не удалось отправить сообщение');
+    }
+  }
+
+  // ===== SAVE =====
+  document.getElementById('saveBtn')?.addEventListener('click', async function() {
+    if (!currentTicket) return;
+    var subjectInput  = document.querySelector('.form-block .input');
+    var textarea      = document.querySelector('.form-block .textarea');
+    var sel           = document.querySelector('.form-block .select');
+    var activePriority = document.querySelector('.priority.active');
+
+    var updates = { version: currentTicket.version };
+    if (subjectInput)   updates.subject     = subjectInput.value.trim() || currentTicket.subject;
+    if (textarea)       updates.description = textarea.value.trim();
+    if (activePriority) updates.urgency     = activePriority.dataset.priority;
+    if (sel && sel.options.length) {
+      var svcVal = sel.options[sel.selectedIndex].value || sel.options[sel.selectedIndex].text;
+      if (svcVal) updates.services = [svcVal];
+    }
+
+    var btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = 'Сохраняется...';
+    try {
+      var res   = await TPPO.updateTicket(ticketId, updates);
+      currentTicket = res.mapped;
+      populateTicket(currentTicket);
+      await loadHistory();
+      showToast('Изменения сохранены');
+    } catch(e) {
+      showToast('Ошибка: ' + (e.message || 'не удалось сохранить'));
+    } finally {
+      btn.disabled = false; btn.textContent = 'Сохранить обращение';
+    }
+  });
+
+  // ===== REVIEW (close ticket) =====
+  var reviewRating = 0;
+  document.getElementById('closeTicketBtn')?.addEventListener('click', function() {
+    reviewRating = 0;
+    document.querySelectorAll('#starRow .star').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('reviewComment').value = '';
+    document.getElementById('reviewModalBg').classList.add('open');
+  });
+  document.querySelectorAll('#starRow .star').forEach(function(star) {
+    star.addEventListener('click', function() {
+      reviewRating = parseInt(star.dataset.v);
+      document.querySelectorAll('#starRow .star').forEach(function(s) { s.classList.toggle('active', parseInt(s.dataset.v) <= reviewRating); });
+    });
+  });
+  document.getElementById('submitReviewBtn')?.addEventListener('click', async function() {
+    if (!reviewRating) { showToast('Поставьте оценку'); return; }
+    if (!currentTicket) return;
+    try {
+      var review = { rating: reviewRating, comment: document.getElementById('reviewComment').value.trim(), closedAt: new Date().toISOString() };
+      var res    = await TPPO.updateTicket(ticketId, { review: review, version: currentTicket.version });
+      currentTicket = res.mapped;
+      document.getElementById('reviewModalBg').classList.remove('open');
+      populateTicket(currentTicket);
+      await loadHistory();
+      showToast('Спасибо за отзыв! Обращение закрыто.');
+    } catch(e) {
+      showToast('Ошибка: ' + (e.message || 'не удалось подтвердить'));
+    }
+  });
+  document.getElementById('cancelReviewBtn')?.addEventListener('click', function() {
+    document.getElementById('reviewModalBg').classList.remove('open');
+  });
+
+  // ===== TABS (desktop) =====
+  var tabs        = document.querySelectorAll('.chat-card .tab');
+  var tabContents = document.querySelectorAll('.chat-card .tab-content');
   function switchTab(activeTab) {
-    tabContents.forEach(content => content.classList.remove('active'));
-    tabs.forEach(tab => tab.classList.remove('active'));
+    tabContents.forEach(function(c) { c.classList.remove('active'); });
+    tabs.forEach(function(t) { t.classList.remove('active'); });
     activeTab.classList.add('active');
-    const tabName = activeTab.getAttribute('data-tab');
-    const targetContent = document.getElementById(`${tabName}Content`);
-    if (targetContent) targetContent.classList.add('active');
+    var target = document.getElementById(activeTab.getAttribute('data-tab') + 'Content');
+    if (target) target.classList.add('active');
   }
-  tabs.forEach(tab => { tab.addEventListener('click', () => switchTab(tab)); });
+  tabs.forEach(function(tab) { tab.addEventListener('click', function() { switchTab(tab); }); });
 
-  // === ПЕРЕКЛЮЧЕНИЕ МОБИЛЬНЫХ ВКЛАДОК ===
-  const mobileTabs = document.querySelectorAll('.mobile-tab');
-  const mobileItems = document.querySelectorAll('.mobile-content-item');
+  // ===== MOBILE TABS =====
+  var mobileTabs  = document.querySelectorAll('.mobile-tab');
+  var mobileItems = document.querySelectorAll('.mobile-content-item');
   function switchMobileTab(activeTab) {
-    mobileTabs.forEach(t => t.classList.remove('active'));
-    mobileItems.forEach(item => item.classList.remove('active'));
+    mobileTabs.forEach(function(t)  { t.classList.remove('active'); });
+    mobileItems.forEach(function(i) { i.classList.remove('active'); });
     activeTab.classList.add('active');
-    const tabName = activeTab.getAttribute('data-mobile-tab');
-    document.getElementById(`mobile${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Item`).classList.add('active');
+    var name = activeTab.getAttribute('data-mobile-tab');
+    var el   = document.getElementById('mobile' + name.charAt(0).toUpperCase() + name.slice(1) + 'Item');
+    if (el) el.classList.add('active');
   }
-  mobileTabs.forEach(tab => { tab.addEventListener('click', () => switchMobileTab(tab)); });
+  mobileTabs.forEach(function(tab) { tab.addEventListener('click', function() { switchMobileTab(tab); }); });
 
-  // === ОТКРЫТИЕ/ЗАКРЫТИЕ МОБИЛЬНОЙ ПАНЕЛИ ===
-  const mobileToggle = document.getElementById('mobileChatToggle');
-  const mobilePanel = document.getElementById('mobileChatPanel');
-  const mobileOverlay = document.getElementById('mobileOverlay');
-  const mobileClose = document.getElementById('mobileChatClose');
-  function openMobilePanel() { mobilePanel.classList.add('open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
-  function closeMobilePanel() { mobilePanel.classList.remove('open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
-  mobileToggle.addEventListener('click', openMobilePanel);
-  mobileClose.addEventListener('click', closeMobilePanel);
-  mobileOverlay.addEventListener('click', closeMobilePanel);
+  // ===== MOBILE PANEL =====
+  var mobileToggle  = document.getElementById('mobileChatToggle');
+  var mobilePanel   = document.getElementById('mobileChatPanel');
+  var mobileOverlay = document.getElementById('mobileOverlay');
+  var mobileClose   = document.getElementById('mobileChatClose');
+  function openMobilePanel()  { mobilePanel.classList.add('open');    mobileOverlay.classList.add('active');    document.body.style.overflow = 'hidden'; }
+  function closeMobilePanel() { mobilePanel.classList.remove('open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = '';       }
+  if (mobileToggle)  mobileToggle.addEventListener('click',  openMobilePanel);
+  if (mobileClose)   mobileClose.addEventListener('click',   closeMobilePanel);
+  if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobilePanel);
 
-  // === ПЕРЕКЛЮЧЕНИЕ ПРИОРИТЕТА ===
-  const priorityBtns = document.querySelectorAll('.priority');
-  priorityBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      priorityBtns.forEach(b => b.classList.remove('active'));
+  // ===== PRIORITY SELECTION =====
+  var priorityBtns = document.querySelectorAll('.priority');
+  priorityBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      priorityBtns.forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
     });
   });
 
-  // === КНОПКИ НАВИГАЦИИ ===
-  document.getElementById('backBtn').addEventListener('click', () => window.location.href='МоиОбращения.html');
-  document.getElementById('logoBtn')?.addEventListener('click', () => window.location.href='Дашборд.html');
-  document.getElementById('profileIcon')?.addEventListener('click', () => window.location.href='Настройки.html');
-  document.getElementById('profileName')?.addEventListener('click', () => window.location.href='Настройки.html');
-  document.getElementById('logoutBtn')?.addEventListener('click', () => window.location.href='ФормаВхода.html');
-
-  // === СОХРАНИТЬ ОБРАЩЕНИЕ ===
-  document.getElementById('saveBtn')?.addEventListener('click', function(){
-    var subjectInput=document.querySelector('.form-block .input');
-    var textarea=document.querySelector('.form-block .textarea');
-    var sel=document.querySelector('.form-block .select');
-    var activePriority=document.querySelector('.priority.active');
-    var oldSubject=currentTicket.subject, oldDesc=currentTicket.description, oldUrgency=currentTicket.urgency;
-    if(subjectInput){ var ns=subjectInput.value.trim()||currentTicket.subject; if(ns!==oldSubject){addHistoryEntry('Тема',oldSubject,ns);} currentTicket.subject=ns; }
-    if(textarea){ var nd=textarea.value.trim(); if(nd!==oldDesc){addHistoryEntry('Описание','(изменено)','');} currentTicket.description=nd; }
-    if(sel){ currentTicket.service=sel.options[sel.selectedIndex]?.text||currentTicket.service; }
-    if(activePriority){ var nu=activePriority.dataset.priority; if(nu!==oldUrgency){addHistoryEntry('Срочность',oldUrgency,nu);} currentTicket.urgency=nu; }
-    currentTicket.files=ticketFiles.slice();
-    saveCurrentTicket();
-    renderHistory();
-    showToast('Изменения сохранены');
+  // ===== NAVIGATION =====
+  document.getElementById('backBtn').addEventListener('click', function() { window.location.href = 'МоиОбращения.html'; });
+  document.getElementById('logoBtn')?.addEventListener('click', function() { window.location.href = 'Дашборд.html'; });
+  document.getElementById('profileIcon')?.addEventListener('click', function() { window.location.href = 'Настройки.html'; });
+  document.getElementById('profileName')?.addEventListener('click', function() { window.location.href = 'Настройки.html'; });
+  document.getElementById('logoutBtn')?.addEventListener('click', async function() {
+    await TPPO.logout();
+    window.location.href = 'ФормаВхода.html';
   });
 
-  // === ЗАКРЫТИЕ + ОТЗЫВ ===
-  var reviewRating = 0;
-  document.getElementById('closeTicketBtn')?.addEventListener('click', function(){
-    reviewRating=0;
-    document.querySelectorAll('#starRow .star').forEach(function(s){ s.classList.remove('active'); });
-    document.getElementById('reviewComment').value='';
-    document.getElementById('reviewModalBg').classList.add('open');
-  });
-  document.querySelectorAll('#starRow .star').forEach(function(star){
-    star.addEventListener('click',function(){
-      reviewRating=parseInt(star.dataset.v);
-      document.querySelectorAll('#starRow .star').forEach(function(s){ s.classList.toggle('active',parseInt(s.dataset.v)<=reviewRating); });
-    });
-  });
-  document.getElementById('submitReviewBtn')?.addEventListener('click',function(){
-    if(reviewRating===0){showToast('Поставьте оценку');return;}
-    currentTicket.review={rating:reviewRating,comment:document.getElementById('reviewComment').value.trim(),closedAt:nowDateStr()};
-    addHistoryEntry('status','Выполнено','Выполнение подтверждено клиентом');
-    saveCurrentTicket();
-    document.getElementById('reviewModalBg').classList.remove('open');
-    document.getElementById('closeTicketBtn').style.display='none';
-    renderHistory();
-    showToast('Спасибо за отзыв! Обращение закрыто.');
-  });
-  document.getElementById('cancelReviewBtn')?.addEventListener('click',function(){
-    document.getElementById('reviewModalBg').classList.remove('open');
-  });
-
-  // === ДЕСКТОП ЧАТ ===
-  const desktopSendBtn = document.getElementById('desktopSendMessageBtn');
-  const desktopChatInput = document.getElementById('desktopChatMessageInput');
-  const desktopChatBody = document.querySelector('#chatContent .chat-body');
-
-  function sendMessage(text){
-    if(!text) return;
-    var msgs=getMsgs(ticketId);
-    var d=new Date(); var time=d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
-    var dateStr=nowDateStr();
-    var msg={id:'msg_'+Date.now(),author:'client',name:'Клиент',text:text,time:time,date:dateStr};
-    msgs.push(msg); saveMsgs(ticketId,msgs);
-    var el=renderMsg(msg);
-    if(desktopChatBody){desktopChatBody.appendChild(el);desktopChatBody.scrollTop=desktopChatBody.scrollHeight;}
-    var mobileBody=document.querySelector('#mobileChatItem .chat-body');
-    if(mobileBody){mobileBody.appendChild(renderMsg(msg));mobileBody.scrollTop=mobileBody.scrollHeight;}
-  }
+  // ===== SEND MESSAGES =====
+  var desktopSendBtn   = document.getElementById('desktopSendMessageBtn');
+  var desktopChatInput = document.getElementById('desktopChatMessageInput');
+  var mobileSendBtn    = document.getElementById('mobileSendMessageBtn');
+  var mobileChatInput  = document.getElementById('mobileChatMessageInput');
 
   function sendDesktopMessage() {
-    const text = desktopChatInput.value.trim();
+    var text = desktopChatInput.value.trim();
     if (text) { sendMessage(text); desktopChatInput.value = ''; }
-    else { showToast('Введите текст сообщения'); }
+    else showToast('Введите текст сообщения');
   }
-  desktopSendBtn?.addEventListener('click', sendDesktopMessage);
-  desktopChatInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendDesktopMessage(); } });
-
-  // === МОБИЛЬНЫЙ ЧАТ ===
-  const mobileSendBtn = document.getElementById('mobileSendMessageBtn');
-  const mobileChatInput = document.getElementById('mobileChatMessageInput');
-
   function sendMobileMessage() {
-    const text = mobileChatInput.value.trim();
+    var text = mobileChatInput.value.trim();
     if (text) { sendMessage(text); mobileChatInput.value = ''; }
-    else { showToast('Введите текст сообщения'); }
+    else showToast('Введите текст сообщения');
   }
-  mobileSendBtn?.addEventListener('click', sendMobileMessage);
-  mobileChatInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMobileMessage(); } });
 
-  // === ВЛОЖЕНИЯ В ЧАТ ===
-  document.getElementById('desktopChatAttachBtn')?.addEventListener('click', () => showToast('Прикрепление файлов к сообщению будет в следующей версии'));
-  document.getElementById('mobileChatAttachBtn')?.addEventListener('click', () => showToast('Прикрепление файлов к сообщению будет в следующей версии'));
+  if (desktopSendBtn)   desktopSendBtn.addEventListener('click', sendDesktopMessage);
+  if (desktopChatInput) desktopChatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); sendDesktopMessage(); } });
+  if (mobileSendBtn)    mobileSendBtn.addEventListener('click', sendMobileMessage);
+  if (mobileChatInput)  mobileChatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); sendMobileMessage(); } });
+
+  document.getElementById('desktopChatAttachBtn')?.addEventListener('click', function() { showToast('Прикрепление файлов к сообщению будет в следующей версии'); });
+  document.getElementById('mobileChatAttachBtn')?.addEventListener('click',  function() { showToast('Прикрепление файлов к сообщению будет в следующей версии'); });
+
+  // ===== INIT =====
+  function showInitError(msg) {
+    var statusEl = document.querySelector('.status');
+    if (statusEl) {
+      statusEl.textContent = 'Ошибка: ' + msg;
+      statusEl.style.cssText = 'display:inline-block;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:700;color:#c62828;background:#fde8e8';
+    }
+    var titleEl = document.querySelector('.ticket-title');
+    if (titleEl) titleEl.textContent = 'Не удалось загрузить обращение';
+    // Чистим hardcoded плейсхолдеры формы
+    var subjectInput = document.querySelector('.form-block .input');
+    if (subjectInput) subjectInput.value = '';
+    var textarea = document.querySelector('.form-block .textarea');
+    if (textarea) textarea.value = '';
+    document.querySelectorAll('.priority').forEach(function(b) { b.classList.remove('active'); });
+    var datesEl = document.querySelector('.dates');
+    if (datesEl) datesEl.innerHTML = '';
+    // Чистим hardcoded чат-сообщения
+    var chatBody = document.querySelector('#chatContent .chat-body');
+    if (chatBody) chatBody.innerHTML = '';
+    var mobileChat = document.querySelector('#mobileChatItem .chat-body');
+    if (mobileChat) mobileChat.innerHTML = '';
+    var mobileHistory = document.querySelector('#mobileHistoryItem .chat-body');
+    if (mobileHistory) mobileHistory.innerHTML = '';
+    var mobileApproval = document.querySelector('#mobileApprovalItem .chat-body');
+    if (mobileApproval) mobileApproval.innerHTML = '';
+    showToast(msg);
+  }
+
+  (async function init() {
+    console.log('[ДеталиОбращения] ticketId from URL:', JSON.stringify(ticketId));
+    if (ticketIdInvalid) {
+      console.error('[init] Invalid ticketId, aborting API call');
+      showInitError('ID обращения отсутствует в URL. Вернитесь на страницу «Мои обращения» и кликните по тикету.');
+      return;
+    }
+    try {
+      var result = await TPPO.getTicket(ticketId);
+      if (!result || !result.mapped) {
+        console.error('[init] TPPO.getTicket returned null for id:', ticketId);
+        showInitError('Обращение не найдено или нет доступа');
+        return;
+      }
+      currentTicket = result.mapped;
+      try { populateTicket(currentTicket); }
+      catch(e) { console.error('[init] populateTicket error:', e); }
+      // Дочерние загрузки — каждая ловит свои ошибки, init не падает
+      loadServices().catch(function(e){ console.error('[init] loadServices:', e); });
+      loadMessages().catch(function(e){ console.error('[init] loadMessages:', e); });
+      loadHistory().catch(function(e){ console.error('[init] loadHistory:', e); });
+      try { renderApproval(); }
+      catch(e) { console.error('[init] renderApproval:', e); }
+    } catch(e) {
+      console.error('[init] Top-level error:', e);
+      showInitError(e.message || 'Не удалось загрузить обращение');
+    }
+  })();
 </script>
 </body>
 </html>
