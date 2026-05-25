@@ -1,0 +1,198 @@
+import request from 'supertest';
+import { createApp } from '../../src/app';
+import { internalPool, externalPool } from '../../src/config/database';
+import bcrypt from 'bcryptjs';
+import { generateTestToken } from '../helpers/auth';
+
+const app = createApp();
+
+// Мокаем внешние зависимости для стабильности
+jest.mock('../../src/services/websocketService', () => ({
+  broadcastToTicket: jest.fn(),
+  initWebSocket: jest.fn(),
+}));
+
+describe('Acceptance Tests – Tickets & Auth', () => {
+  let clientToken: string;
+  let ticketId: string;
+  let operatorToken: string;
+
+  beforeAll(async () => {
+    // Подготовка тестовых пользователей
+    const hashedPass = await bcrypt.hash('123456', 10);
+    await internalPool.query(
+      `INSERT INTO users (id, phone, name, role, password_hash, organization_id)
+       VALUES ('client1', '+79991234567', 'Клиент', 'client', $1, 'org1'),
+              ('operator1', '+79990000001', 'Оператор', 'operator', $1, 'org1')
+       ON CONFLICT (id) DO NOTHING`,
+      [hashedPass]
+    );
+    await internalPool.query(
+      `INSERT INTO organizations (id, name, inn) VALUES ('org1', 'ООО Тест', '1234567890')
+       ON CONFLICT (id) DO NOTHING`
+    );
+    await internalPool.query(
+      `INSERT INTO services (code, name, is_active) VALUES ('billing', 'Биллинг', true)
+       ON CONFLICT (code) DO NOTHING`
+    );
+    clientToken = generateTestToken({ sub: 'client1', role: 'client', phone: '+79991234567' });
+    operatorToken = generateTestToken({ sub: 'operator1', role: 'operator', phone: '+79990000001' });
+  });
+
+  afterAll(async () => {
+    await internalPool.query(`DELETE FROM users WHERE id IN ('client1','operator1')`);
+    await internalPool.query(`DELETE FROM organizations WHERE id = 'org1'`);
+    await internalPool.end();
+  });
+
+  // AT-05: Создание обращения со всеми обязательными полями
+  it('AT-05: Create ticket with all required fields', async () => {
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${clientToken}`)
+      .send({
+        subject: 'Проблема с биллингом',
+        description: 'Двойной списание',
+        type: 'complaint',
+        urgency: 'high',
+        services: ['Биллинг'],
+      });
+    expect(res.status).toBe(201);
+    expect(res.body).toHaveProperty('id');
+    expect(res.body.status_code).toBe('new');
+    ticketId = res.body.id;
+  });
+
+  // AT-07: Попытка отправки обращения без обязательных полей
+  it('AT-07: Cannot create ticket without subject', async () => {
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${clientToken}`)
+      .send({ description: 'Нет темы' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('subject');
+  });
+
+  // AT-03: Фильтрация по статусу
+  it('AT-03: Filter tickets by status', async () => {
+    const res = await request(app)
+      .get('/api/tickets?status=new')
+      .set('Authorization', `Bearer ${clientToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBeGreaterThan(0);
+    expect(res.body.data[0].status_code).toBe('new');
+  });
+
+  // AT-10: Просмотр карточки обращения
+  it('AT-10: View ticket details', async () => {
+    const res = await request(app)
+      .get(`/api/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${clientToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(ticketId);
+    expect(res.body).toHaveProperty('subject', 'Проблема с биллингом');
+  });
+
+  // AT-11: История изменений
+  it('AT-11: View ticket history', async () => {
+    const res = await request(app)
+      .get(`/api/tickets/${ticketId}/history`)
+      .set('Authorization', `Bearer ${clientToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  // AT-13: Отправка сообщения в чате
+  it('AT-13: Send message in chat', async () => {
+    const res = await request(app)
+      .post(`/api/tickets/${ticketId}/messages`)
+      .set('Authorization', `Bearer ${clientToken}`)
+      .send({ text: 'Тестовое сообщение' });
+    expect(res.status).toBe(201);
+    expect(res.body.text).toBe('Тестовое сообщение');
+  });
+
+  // AT-14: Прикрепление файла к сообщению (через API файлов)
+  it('AT-14: Attach file to message', async () => {
+    const uploadRes = await request(app)
+      .post('/api/files/upload-request')
+      .set('Authorization', `Bearer ${clientToken}`)
+      .send({
+        ticket_id: ticketId,
+        original_name: 'test.txt',
+        mime_type: 'text/plain',
+        size: 100,
+      });
+    expect(uploadRes.status).toBe(200);
+    expect(uploadRes.body).toHaveProperty('upload_url');
+  });
+
+  // AT-15: Редактирование описания обращения
+  it('AT-15: Edit ticket description', async () => {
+    const getRes = await request(app)
+      .get(`/api/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${clientToken}`);
+    const version = getRes.body.version;
+    const res = await request(app)
+      .put(`/api/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${clientToken}`)
+      .send({ description: 'Новое описание', version });
+    expect(res.status).toBe(200);
+    expect(res.body.description).toBe('Новое описание');
+  });
+
+  // AT-19: Подтверждение выполнения обращения клиентом
+  it('AT-19: Confirm completion', async () => {
+    // Сначала оператор меняет статус на 'done'
+    const getRes = await request(app)
+      .get(`/api/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${clientToken}`);
+    const version = getRes.body.version;
+    await request(app)
+      .put(`/api/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${operatorToken}`)
+      .send({ status_code: 'done', version });
+    // Клиент подтверждает
+    const confirmRes = await request(app)
+      .put(`/api/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${clientToken}`)
+      .send({ review: { rating: 5, comment: 'Спасибо' }, version: version + 1 });
+    expect(confirmRes.status).toBe(200);
+    expect(confirmRes.body.status_code).toBe('done');
+  });
+
+  // AT-30: Разграничение доступа (чужое обращение)
+  it('AT-30: Cannot access another organization ticket', async () => {
+    // Создаём другую организацию и пользователя
+    await internalPool.query(
+      `INSERT INTO organizations (id, name, inn) VALUES ('org2', 'Другая', '0987654321')
+       ON CONFLICT (id) DO NOTHING`
+    );
+    await internalPool.query(
+      `INSERT INTO users (id, phone, name, role, organization_id)
+       VALUES ('client2', '+79991112222', 'Чужой', 'client', 'org2')
+       ON CONFLICT (id) DO NOTHING`
+    );
+    const foreignToken = generateTestToken({ sub: 'client2', role: 'client' });
+    const res = await request(app)
+      .get(`/api/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${foreignToken}`);
+    expect(res.status).toBe(403);
+  });
+
+  // AT-22: Получение уведомлений (проверяем, что broadcast вызван)
+  it('AT-22: Notifications are sent on status change', async () => {
+    const { broadcastToTicket } = require('../../src/services/websocketService');
+    expect(broadcastToTicket).toHaveBeenCalled();
+  });
+
+  // AT-23: Настройка уведомлений
+  it('AT-23: Update notification settings', async () => {
+    const res = await request(app)
+      .put('/api/users/notification-settings')
+      .set('Authorization', `Bearer ${clientToken}`)
+      .send({ email: false, push: true });
+    expect(res.status).toBe(200);
+    expect(res.body.email).toBe(false);
+  });
+});

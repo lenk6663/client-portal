@@ -54,6 +54,8 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     if (status) { conditions.push(`t.status_code = $${p++}`); params.push(status); }
     if (type)   { conditions.push(`t.type = $${p++}`);        params.push(type);   }
     if (urgency){ conditions.push(`t.urgency = $${p++}`);     params.push(urgency);}
+    if (req.query.dateFrom) conditions.push(`t.created_at >= $${p++}`), params.push(req.query.dateFrom);
+    if (req.query.dateTo) conditions.push(`t.created_at <= $${p++}`), params.push(req.query.dateTo);
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
