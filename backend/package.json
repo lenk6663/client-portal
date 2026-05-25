@@ -8,7 +8,12 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "db:migrate": "ts-node src/db/migrate.ts",
-    "db:seed": "ts-node src/db/seed.ts"
+    "db:seed": "ts-node src/db/seed.ts",
+    "test": "cross-env NODE_ENV=test jest --runInBand --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:security": "jest tests/security",
+    "test:performance": "artillery run tests/performance/load-test.yml"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.600.0",
@@ -29,15 +34,24 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
+    "@types/express": "^4.17.25",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^20.14.0",
+    "@types/node": "^20.19.41",
     "@types/pg": "^8.11.6",
+    "@types/supertest": "^7.2.0",
     "@types/uuid": "^10.0.0",
-    "@types/ws": "^8.5.11",
+    "@types/ws": "^8.18.1",
+    "artillery": "^2.0.32",
+    "axios": "^1.16.1",
+    "cross-env": "^10.1.0",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "wait-on": "^9.0.10"
   }
 }

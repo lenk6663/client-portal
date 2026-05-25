@@ -64,7 +64,7 @@ async function ensureUser(phone: string, name: string): Promise<string> {
 // ════════════════════════════════════════════════════════════
 // syncFromExternal — тянем обращения из 1С в внутреннюю БД
 // ════════════════════════════════════════════════════════════
-async function syncFromExternal(): Promise<void> {
+export async function syncFromExternal(): Promise<void> {
   const started = Date.now();
   let synced = 0;
   let errors = 0;
@@ -289,7 +289,7 @@ async function syncMessages(): Promise<void> {
 // ════════════════════════════════════════════════════════════
 // processOutbox — отправляем события из outbox во внешнюю БД
 // ════════════════════════════════════════════════════════════
-async function processOutbox(): Promise<void> {
+export async function processOutbox(): Promise<void> {
   const { rows: events } = await internalPool.query(
     `SELECT * FROM outbox
      WHERE status = 'pending' AND scheduled_after <= now()

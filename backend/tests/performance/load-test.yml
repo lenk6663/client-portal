@@ -1,0 +1,31 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Нагрузка"
+  processor: "./auth-processor.js"
+  defaults:
+    headers:
+      Authorization: "Bearer {{ token }}"
+
+scenarios:
+  - name: "Получить токен и выполнить запросы"
+    flow:
+      - function: "getAuthToken"
+      - post:
+          url: "/api/tickets"
+          json:
+            subject: "Нагрузочный тест"
+            description: "Автоматически"
+            urgency: "medium"
+            services: []
+          capture:
+            - json: "$.id"
+              as: "ticketId"
+      - get:
+          url: "/api/tickets"
+      - post:
+          url: "/api/tickets/{{ ticketId }}/messages"
+          json:
+            text: "Тест производительности"

@@ -1,0 +1,30 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      name: "Нагрузка"
+  processor: "./auth-processor.js"
+  defaults:
+    headers:
+      Authorization: "Bearer {{ token }}"
+
+scenarios:
+  - name: "PERF-01 Вход"
+    flow:
+      - function: "getAuthToken"
+  - name: "PERF-02 Создание обращения"
+    flow:
+      - function: "getAuthToken"
+      - post:
+          url: "/api/tickets"
+          json:
+            subject: "Нагрузка"
+            description: "Тест"
+            urgency: "medium"
+            services: []
+  - name: "PERF-03 Синхронизация"
+    flow:
+      - function: "getAuthToken"
+      - get:
+          url: "/api/tickets?status=new"
